@@ -1,9 +1,10 @@
 # ===================================================================
-# GITIGNORE - ECOFIELD SYSTEM
-# Projeto: Sistema de Lista de Verificação com Vite + React + TypeScript
+# GITIGNORE - FIELDMANAGER
+# Projeto: Plataforma Multi-Domínio para Gestão de Compliance
+# Versão: 2.0.0
 # ===================================================================
 
-
+# Arquivos de configuração do Claude Code
 CLAUDE.md
 .claude
 

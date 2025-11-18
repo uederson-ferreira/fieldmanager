@@ -16,7 +16,9 @@
     "verificar": "node -e \"console.log('Node.js:', process.version); console.log('NODE_ENV:', process.env.NODE_ENV); console.log('PORT:', process.env.PORT);\""
   },
   "keywords": [
-    "fieldmanager", "multi-domain", "management",
+    "fieldmanager",
+    "multi-domain",
+    "management",
     "fieldmanager-backend",
     "api"
   ],
@@ -28,6 +30,7 @@
     "pnpm": ">=8.0.0"
   },
   "dependencies": {
+    "@supabase/functions-js": "^2.83.0",
     "@supabase/supabase-js": "^2.50.3",
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
