@@ -1,5 +1,4 @@
 // Página de Teste - Sistema Multi-Domínio
-import React from 'react';
 import { useDominio } from '../contexts/DominioContext';
 import DominioSelector from '../components/common/DominioSelector';
 
