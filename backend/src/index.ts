@@ -1,28 +1,41 @@
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Carregar variáveis de ambiente ANTES de tudo
+dotenv.config({ path: path.join(__dirname, '../.env') });
+
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+
+// Rotas Multi-Domínio (FieldManager v2.0)
+import dominiosRouter from './routes/dominios';
+import modulosSistemaRouter from './routes/modulos-sistema';
+import execucoesRouter from './routes/execucoes';
+
+// Rotas Compartilhadas (usadas por ambos os sistemas)
 import uploadRouter from './routes/upload';
 import versionRouter from './routes/version';
+import authRouter from './routes/auth';
+import usuariosRouter from './routes/usuarios';
+import fotosRouter from './routes/fotos';
+
+// Rotas Legadas (mantidas para compatibilidade temporária)
+// MOVIDAS PARA _legacy/: lvs, termos, rotinas, categorias
 import perfisRouter from './routes/perfis';
 import encarregadosRouter from './routes/encarregados';
 import empresasRouter from './routes/empresas';
 import areasRouter from './routes/areas';
-import categoriasRouter from './routes/categorias';
-import lvsRouter from './routes/lvs';
 import metasRouter from './routes/metas';
-import termosRouter from './routes/termos';
 import configuracoesRouter from './routes/configuracoes';
-import rotinasRouter from './routes/rotinas';
 import logsRouter from './routes/logs';
 import backupRouter from './routes/backup';
 import estatisticasRouter from './routes/estatisticas';
 import estatisticasUsuarioRouter from './routes/estatisticas-usuario';
-import usuariosRouter from './routes/usuarios';
-import fotosRouter from './routes/fotos';
 import historicoRouter from './routes/historico';
 import syncRouter from './routes/sync';
-import authRouter from './routes/auth';
 import acoesCorretivasRouter from './routes/acoesCorretivas';
+
 import { getCurrentTimestamp } from './utils/dateUtils';
 
 const app = express();
@@ -133,50 +146,77 @@ app.use('/api', (req, res, next) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: getCurrentTimestamp(),
-    service: 'ecofield-backend',
-    version: '1.0.0',
+    service: 'fieldmanager-backend',
+    version: '2.0.0',
     port: PORT,
-    cors: 'enabled'
+    cors: 'enabled',
+    architecture: 'multi-domain'
   });
 });
 
 // ===================================================================
-// ROTAS DA API
+// ROTAS DA API - FIELDMANAGER v2.0 (MULTI-DOMÍNIO)
 // ===================================================================
 
+// Rotas Multi-Domínio (Novas)
+app.use('/api/dominios', dominiosRouter);
+app.use('/api/modulos-sistema', modulosSistemaRouter);
+app.use('/api/execucoes', execucoesRouter);
+
+// Rotas Gerais (Compartilhadas)
+app.use('/api/auth', authRouter);
+app.use('/api/usuarios', usuariosRouter);
 app.use('/api', uploadRouter);
+app.use('/api/fotos', fotosRouter);
+app.use('/', versionRouter);
+
+// ===================================================================
+// ROTAS LEGADAS - ECOFIELD (Manter temporariamente)
+// TODO: Migrar dados e depois remover
+// NOTA: Rotas movidas para _legacy/: lvs, termos, rotinas, categorias
+// ===================================================================
 app.use('/api/perfis', perfisRouter);
 app.use('/api/encarregados', encarregadosRouter);
 app.use('/api/empresas', empresasRouter);
 app.use('/api/areas', areasRouter);
-app.use('/api/categorias', categoriasRouter);
-app.use('/api/lvs', lvsRouter);
 app.use('/api/metas', metasRouter);
-app.use('/api/termos', termosRouter);
 app.use('/api/configuracoes', configuracoesRouter);
-app.use('/api/rotinas', rotinasRouter);
 app.use('/api/logs', logsRouter);
 app.use('/api/backup', backupRouter);
 app.use('/api/estatisticas', estatisticasRouter);
 app.use('/api/estatisticas', estatisticasUsuarioRouter);
-app.use('/api/usuarios', usuariosRouter);
-app.use('/api/fotos', fotosRouter);
 app.use('/api/historico', historicoRouter);
 app.use('/api/sync', syncRouter);
-app.use('/api/auth', authRouter);
 app.use('/api/acoes-corretivas', acoesCorretivasRouter);
-app.use('/', versionRouter);
 
 // Rota raiz
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'EcoField Backend API',
+  res.json({
+    message: 'FieldManager Backend API v2.0',
+    description: 'Plataforma Multi-Domínio para Gestão de Compliance',
     status: 'running',
+    version: '2.0.0',
+    architecture: 'multi-domain / multi-tenant',
     timestamp: getCurrentTimestamp(),
-    cors: 'configured'
+    cors: 'configured',
+    endpoints: {
+      multiDomain: [
+        'GET  /api/dominios',
+        'GET  /api/dominios/:id/modulos',
+        'GET  /api/modulos-sistema',
+        'GET  /api/modulos-sistema/:id/perguntas',
+        'POST /api/execucoes',
+        'GET  /api/execucoes/:id'
+      ],
+      auth: [
+        'POST /api/auth/login',
+        'POST /api/auth/register'
+      ],
+      health: 'GET /api/health'
+    }
   });
 });
 
