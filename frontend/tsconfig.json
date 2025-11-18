@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "strictNullChecks": false,
+    
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "composite": true,
+    
+    // Configurações para resolver problema com Express
+    "types": ["node", "vite/client"],
+    "typeRoots": ["./node_modules/@types"],
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    
+    // Configurações para ignorar erros de bibliotecas externas
+    "skipDefaultLibCheck": true,
+    "noResolve": false,
+    
+    // Configurações específicas para ignorar Workbox
+    "noEmitOnError": false
+  },
+  "include": ["src"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dev-dist",
+    "**/node_modules/**",
+    "**/workbox-*/**",
+    "**/workbox-build/**",
+    "src/_legacy/**"
+  ]
+}

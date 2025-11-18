@@ -1,0 +1,155 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                   MAPA VISUAL - ESTRUTURA ADMIN ECOFIELD                       ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+┌─ CAMADA 1: ARQUIVO RAIZ ──────────────────────────────────────────────────────┐
+│                                                                                 │
+│  /frontend/src/components/AdminDashboard.tsx                                   │
+│  ├─ Sidebar (colapsável)                                                       │
+│  │  ├─ Logo + Toggle                                                           │
+│  │  ├─ Menu Items × 11                                                         │
+│  │  └─ User Info + Logout                                                      │
+│  │                                                                              │
+│  └─ Main Content (renderContent by activeSection)                              │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CAMADA 2: MENU E ROTAS ──────────────────────────────────────────────────────┐
+│                                                                                 │
+│  DASHBOARD          [LayoutDashboard] → Stats + Atividades (mockadas)         │
+│                                                                                 │
+│  ┌─ GESTÃO DE DADOS ─────────────────────────────────────────────────────────┐ │
+│  │ USUÁRIOS        [Users]      → /admin/CrudUsuarios.tsx                     │ │
+│  │ PERFIS          [UserCheck]  → /admin/CrudPerfis.tsx                       │ │
+│  │ CATEGORIAS      [FolderOpen] → /admin/CrudCategorias.tsx                   │ │
+│  │ ÁREAS           [MapPin]     → /admin/CrudAreas.tsx                        │ │
+│  └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                 │
+│  ┌─ DOCUMENTOS ──────────────────────────────────────────────────────────────┐ │
+│  │ TERMOS          [FileCheck]  → /admin/AdminTermos.tsx + subcomponentes     │ │
+│  │ ROTINAS         [Clock]      → /admin/AdminRotinas.tsx + subcomponentes    │ │
+│  │ METAS           [Target]     → /admin/CrudMetas.tsx → Container            │ │
+│  └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                 │
+│  ┌─ RELATÓRIOS & SISTEMA ────────────────────────────────────────────────────┐ │
+│  │ RELATÓRIOS      [FileText]   → /admin/DashboardGerencial.tsx               │ │
+│  │ CONFIGURAÇÕES   [Settings]   → /admin/CrudConfiguracoes.tsx                │ │
+│  │ BACKUP          [Database]   → /admin/Backup.tsx                           │ │
+│  └────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CAMADA 3: COMPONENTES IMPLEMENTADOS ──────────────────────────────────────────┐
+│                                                                                 │
+│  TERMOS (Modular - 4 componentes)                                              │
+│  ├─ AdminTermos.tsx (Container - orquestra)                                    │
+│  ├─ AdminTermosAcoes.tsx (Botões: Nova, Refresh, Excluir)                      │
+│  ├─ AdminTermosFiltro.tsx (Filtros: Tipo, Status, Data, Área)                  │
+│  ├─ AdminTermosTabela.tsx (Tabela com seleção múltipla)                        │
+│  └─ Hook: useAdminTermos() - Estado + CRUD                                     │
+│                                                                                 │
+│  ROTINAS (Modular - 4 componentes)                                             │
+│  ├─ AdminRotinas.tsx (Container)                                               │
+│  ├─ AdminRotinasAcoes.tsx (Botões)                                             │
+│  ├─ AdminRotinasTabela.tsx (Tabela)                                            │
+│  ├─ AdminRotinasForm.tsx (Modal de CRUD)                                       │
+│  └─ Hook: useAdminRotinas() - CRUD completo                                    │
+│                                                                                 │
+│  METAS (Complexo - 8 componentes)                                              │
+│  ├─ CrudMetas.tsx (Wrapper simples)                                            │
+│  ├─ CrudMetasContainer.tsx (Orquestra tudo)                                    │
+│  ├─ CrudMetasTable.tsx (Tabela com ações)                                      │
+│  ├─ CrudMetasForm.tsx (Modal CRUD)                                             │
+│  ├─ CrudMetasDashboard.tsx (KPIs e gráficos)                                   │
+│  ├─ CrudMetasFilters.tsx (Filtros avançados)                                   │
+│  ├─ CrudMetasAtribuicao.tsx (Modal atribuição individual)                      │
+│  ├─ CrudMetasEditarAtribuicao.tsx (Modal editar atribuição)                    │
+│  └─ Hook: useCrudMetas() - CRUD + Atribuições + Progresso                      │
+│                                                                                 │
+│  OUTROS (Simples - 1 arquivo cada)                                             │
+│  ├─ CrudUsuarios.tsx (Completo em 1 arquivo - 28KB)                            │
+│  ├─ CrudPerfis.tsx (CRUD básico)                                               │
+│  ├─ CrudCategorias.tsx (CRUD básico)                                           │
+│  ├─ CrudAreas.tsx (CRUD básico)                                                │
+│  ├─ CrudConfiguracoes.tsx (CRUD chave-valor)                                   │
+│  ├─ Backup.tsx (Download + Backup)                                             │
+│  └─ DashboardGerencial.tsx (Cards + 1 gráfico + 2 placeholders)                │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CAMADA 4: HOOKS PERSONALIZADOS ──────────────────────────────────────────────┐
+│                                                                                 │
+│  /hooks/useAdminTermos.ts                                                      │
+│  ├─ Estados: termos[], loading, selecionados[], mensagem, filtros              │
+│  ├─ Ações: fetchTermos, handleSelecionar, handleExcluir, handleExcluirLote    │
+│  └─ Filtros: tipo_termo, status, data_inicio, data_fim, emitido_por, area     │
+│                                                                                 │
+│  /hooks/useAdminRotinas.ts                                                     │
+│  ├─ Estados: rotinas[], loading, error, showForm, form, editId, saving         │
+│  ├─ Ações: CRUD completo (fetch, create, update, delete)                       │
+│  └─ Modal: Formulário reutilizável                                             │
+│                                                                                 │
+│  /hooks/useCrudMetas.ts                                                        │
+│  ├─ Estados: Dados, loading, filtros, dashboard, atribuições                   │
+│  ├─ Ações: CRUD + Atribuição + Progresso + Toggle Status                       │
+│  ├─ Modais: Form + Atribuição Individual + Editar Atribuição                   │
+│  └─ Filtros: tipo_meta, escopo, ativa, período, ano, mês                       │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CAMADA 5: API CLIENTS (lib/*.ts) ────────────────────────────────────────────┐
+│                                                                                 │
+│  usuariosAPI.ts ──────────────┐                                                │
+│  perfisAPI.ts                 ├─→ fetch() ──→ VITE_API_URL/api/...             │
+│  categoriasAPI.ts             │                                                │
+│  areasAPI.ts ──────────────────┤                                               │
+│  termosAPI.ts                 │                                                │
+│  rotinasAPI.ts ─────────────────┤                                              │
+│  metasAPI.ts                  │                                                │
+│  lvAPI.ts ────────────────────┘                                                │
+│  estatisticasAPI.ts ──→ /api/estatisticas/dashboard                            │
+│  configuracoesAPI.ts ──→ /api/configuracoes                                    │
+│                                                                                 │
+│  Padrão: { success: boolean; data?: T[]; error?: string }                      │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CAMADA 6: BACKEND ROUTES ────────────────────────────────────────────────────┐
+│                                                                                 │
+│  /backend/src/routes/                                                          │
+│  ├─ usuarios.ts       → GET/POST/PUT/DELETE /api/usuarios                      │
+│  ├─ perfis.ts         → GET/POST /api/perfis                                   │
+│  ├─ categorias.ts     → GET/POST /api/categorias                               │
+│  ├─ areas.ts          → GET/POST /api/areas                                    │
+│  ├─ termos.ts         → GET/POST/DELETE /api/termos + estatísticas             │
+│  ├─ rotinas.ts        → GET/POST/PUT/DELETE /api/rotinas                       │
+│  ├─ metas.ts          → GET/POST/PUT/DELETE /api/metas + atribuições           │
+│  ├─ lvs.ts            → GET/POST /api/lvs                                      │
+│  ├─ estatisticas.ts   → GET /api/estatisticas/dashboard                        │
+│  ├─ configuracoes.ts  → GET/POST /api/configuracoes                            │
+│  └─ upload.ts         → POST /api/upload (fotos)                               │
+│                                                                                 │
+│  Autenticação: Bearer token via middleware                                     │
+│  Database: Supabase PostgreSQL (RLS policies)                                  │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CONTAGEM DE ARQUIVOS ────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Componentes Admin:       23 arquivos .tsx                                     │
+│  ├─ Containers/Wrappers: 6 (AdminDashboard, DashboardGerencial, etc)           │
+│  ├─ Modular (Termos):     4 arquivos                                           │
+│  ├─ Modular (Rotinas):    4 arquivos                                           │
+│  ├─ Modular (Metas):      8 arquivos                                           │
+│  └─ Simples (1 arquivo):  7 arquivos (Usuários, Perfis, Áreas, etc)            │
+│                                                                                 │
+│  Hooks Admin:            3 arquivos                                            │
+│  ├─ useAdminTermos.ts                                                          │
+│  ├─ useAdminRotinas.ts                                                         │
+│  └─ useCrudMetas.ts                                                            │
+│                                                                                 │
+│  APIs Disponíveis:       10 arquivos                                           │
+│  Backend Routes:         11 arquivos                                           │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+

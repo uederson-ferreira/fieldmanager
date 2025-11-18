@@ -1,0 +1,290 @@
+# ===================================================================
+# GITIGNORE - ECOFIELD SYSTEM
+# Projeto: Sistema de Lista de Verificação com Vite + React + TypeScript
+# ===================================================================
+
+
+CLAUDE.md
+.claude
+
+# =========================
+# GERAL
+# =========================
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+out/
+**/out/
+dev-dist/
+**/dev-dist/
+.vite/
+**/.vite/
+.cache/
+**/.cache/
+.parcel-cache/
+**/.parcel-cache/
+.next/
+.nuxt/
+.storybook-out/
+storybook-static/
+coverage/
+.nyc_output/
+.npm/
+.yarn-integrity
+.pnp
+.pnp.js
+*.tgz
+
+# =========================
+# AMBIENTE E CONFIG
+# =========================
+.env
+.env.*
+**/.env
+**/.env.*
+.supabase/
+supabase/.env
+supabase/config.toml
+config.local.js
+config.local.json
+
+# =========================
+# LOGS E TEMPORÁRIOS
+# =========================
+logs/
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+*.swp
+*.swo
+*.patch
+*.fix
+*.fixes
+*.backup
+*.bkp
+*.install.log
+install_*.sh.log
+
+# =========================
+# SISTEMA OPERACIONAL E IDE
+# =========================
+.DS_Store
+**/.DS_Store
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.AppleDouble
+.LSOverride
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# =========================
+# TESTES E RELATÓRIOS
+# =========================
+test-results/
+playwright-report/
+test-results.xml
+*.lcov
+
+# =========================
+# DADOS E UPLOADS
+# =========================
+uploads/
+static/uploads/
+public/uploads/
+*.db
+*.sqlite
+*.sqlite3
+
+# =========================
+# CERTIFICADOS E CHAVES
+# =========================
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# =========================
+# DOCS GERADOS
+# =========================
+docs/build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build outputs
+*.local
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# TypeScript
+*.tsbuildinfo
+.tscache/
+
+# Environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+
+# Editor directories and files
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+
+# OS generated files
+# macOS
+._*
+.Spotlight-V100
+.Trashes
+*.DS_Store?
+*.AppleDouble
+*.LSOverride
+*.DocumentRevisions-V100
+*.fseventsd
+*.Spotlight-V100
+*.TemporaryItems
+*.VolumeIcon.icns
+*.com.apple.timemachine.donotpresent
+*.AppleDB
+*.AppleDesktop
+*.Network Trash Folder
+*.Temporary Items
+*.apdisk
+
+# Windows
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Linux
+*.fuse_hidden*
+*.directory
+*.Trash-*
+*.nfs*
+
+# Temporary files
+*.swp
+*.bak
+*.orig
+*.fix
+*.fixes
+*.patch
+
+# Coverage directory used by tools like istanbul
+*.lcov
+
+# ESLint cache
+.eslintcache
+
+# Prettier cache
+.prettiercache
+
+# Stylelint cache
+.stylelintcache
+
+# Optional npm cache directory
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+
+# Storybook build outputs
+.out
+.storybook-out
+storybook-static
+
+# Supabase
+.supabase/
+supabase/.env
+supabase/config.toml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads e arquivos de usuário
+uploads/
+static/uploads/
+public/uploads/
+
+# Certificados e chaves
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Arquivos de backup
+*.backup
+*.bkp
+
+# Arquivos de documentação gerados
+docs/build/
+
+# Arquivos de teste
+test-results/
+playwright-report/
+test-results.xml

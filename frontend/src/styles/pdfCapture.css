@@ -1,0 +1,111 @@
+/* ===================================================================
+   CSS OTIMIZADO PARA CAPTURA PDF
+   Localização: frontend/src/styles/pdfCapture.css
+   =================================================================== */
+
+/* Importar no App.tsx ou index.css */
+
+/* Melhorar qualidade da captura */
+#modal-content-to-print {
+  /* Forçar renderização de alta qualidade */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Garantir fundo branco */
+  background: white !important;
+  
+  /* Melhorar definição de texto */
+  text-rendering: optimizeLegibility;
+  
+  /* Evitar quebras estranhas */
+  break-inside: avoid;
+}
+
+/* Otimizar imagens para captura */
+#modal-content-to-print img {
+  /* Forçar carregamento completo */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  
+  /* Evitar cortes */
+  break-inside: avoid;
+  page-break-inside: avoid;
+  
+  /* Garantir visibilidade */
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Melhorar renderização de cards */
+#modal-content-to-print .bg-gradient-to-br,
+#modal-content-to-print .bg-gradient-to-r {
+  /* Fallback para gradientes */
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* Garantir contraste em texto */
+#modal-content-to-print .text-white {
+  color: #1f2937 !important;
+  background: #f3f4f6 !important;
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
+}
+
+/* Melhorar badges e status */
+#modal-content-to-print .status-badge,
+#modal-content-to-print .signature-status {
+  border: 2px solid currentColor !important;
+  font-weight: bold !important;
+}
+
+/* Otimizar para impressão */
+@media print {
+  /* Ocultar tudo exceto o conteúdo */
+  body * {
+    visibility: hidden !important;
+  }
+  
+  #modal-content-to-print,
+  #modal-content-to-print * {
+    visibility: visible !important;
+  }
+  
+  #modal-content-to-print {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    background: white !important;
+    padding: 20px !important;
+    box-shadow: none !important;
+  }
+  
+  /* Remover elementos desnecessários na impressão */
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Classe para loading durante captura */
+.pdf-capturing {
+  pointer-events: none;
+  user-select: none;
+  
+  /* Indicador visual */
+  position: relative;
+}
+
+.pdf-capturing::after {
+  content: "Gerando PDF...";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  z-index: 1000;
+  font-weight: bold;
+} 

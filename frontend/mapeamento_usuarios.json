@@ -1,0 +1,14 @@
+{
+  "abb0e395-64aa-438c-94d6-1bf4c43f151a": {
+    "idAntigo": "abb0e395-64aa-438c-94d6-1bf4c43f151a",
+    "idNovo": "59fbfd49-b8d6-4fb1-aa5c-f2ec0a3ee028",
+    "nome": "João Silva",
+    "email": "joao.silva@empresa.com"
+  },
+  "0b30c325-abfe-45a4-b1f5-a65243c0e3d8": {
+    "idAntigo": "0b30c325-abfe-45a4-b1f5-a65243c0e3d8",
+    "idNovo": "6dfe0415-b980-445b-bf48-aede94fdf93c",
+    "nome": "Administrador Sistema",
+    "email": "admin@sistema.com"
+  }
+}

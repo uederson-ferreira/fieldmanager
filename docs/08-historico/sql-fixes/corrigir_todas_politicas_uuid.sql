@@ -1,0 +1,78 @@
+-- ===================================================================
+-- CORRIGIR TODAS AS POLÍTICAS COM CAST UUID
+-- ===================================================================
+
+-- 1. DESABILITAR RLS
+ALTER TABLE termos_ambientais DISABLE ROW LEVEL SECURITY;
+
+-- 2. REMOVER TODAS AS POLÍTICAS
+DROP POLICY IF EXISTS "termos_insert_user" ON termos_ambientais;
+DROP POLICY IF EXISTS "termos_select_user_admin" ON termos_ambientais;
+DROP POLICY IF EXISTS "termos_update_user_admin" ON termos_ambientais;
+DROP POLICY IF EXISTS "termos_delete_admin_only" ON termos_ambientais;
+
+-- 3. CRIAR TODAS AS POLÍTICAS COM CAST CORRETO
+-- ===================================================================
+
+-- INSERT
+CREATE POLICY "termos_insert_user" ON termos_ambientais
+FOR INSERT WITH CHECK (emitido_por_usuario_id = auth.uid()::uuid);
+
+-- SELECT
+CREATE POLICY "termos_select_user_admin" ON termos_ambientais
+FOR SELECT USING (
+  emitido_por_usuario_id = auth.uid()::uuid 
+  OR EXISTS (
+    SELECT 1 FROM usuarios u
+    JOIN perfis p ON u.perfil_id = p.id
+    WHERE u.id = auth.uid()::uuid
+    AND p.nome = ANY (ARRAY['admin', 'developer', 'ADM'])
+  )
+);
+
+-- UPDATE
+CREATE POLICY "termos_update_user_admin" ON termos_ambientais
+FOR UPDATE USING (
+  emitido_por_usuario_id = auth.uid()::uuid 
+  OR EXISTS (
+    SELECT 1 FROM usuarios u
+    JOIN perfis p ON u.perfil_id = p.id
+    WHERE u.id = auth.uid()::uuid
+    AND p.nome = ANY (ARRAY['admin', 'developer', 'ADM'])
+  )
+);
+
+-- DELETE
+CREATE POLICY "termos_delete_admin_only" ON termos_ambientais
+FOR DELETE USING (
+  EXISTS (
+    SELECT 1 FROM usuarios u
+    JOIN perfis p ON u.perfil_id = p.id
+    WHERE u.id = auth.uid()::uuid
+    AND p.nome = ANY (ARRAY['admin', 'developer', 'ADM'])
+  )
+);
+
+-- 4. REABILITAR RLS
+ALTER TABLE termos_ambientais ENABLE ROW LEVEL SECURITY;
+
+-- 5. TESTAR
+DO $$
+DECLARE
+  current_user_id text := 'abb0e395-64aa-438c-94d6-1bf4c43f151a';
+  rls_result integer;
+BEGIN
+  RAISE NOTICE '🧪 Testando todas as políticas corrigidas...';
+  
+  SELECT COUNT(*) INTO rls_result
+  FROM termos_ambientais 
+  WHERE emitido_por_usuario_id = current_user_id::uuid;
+  
+  RAISE NOTICE '📊 Termos visíveis para João: %', rls_result;
+  
+  IF rls_result = 5 THEN
+    RAISE NOTICE '✅ RLS funcionando! João pode ver seus 5 termos!';
+  ELSE
+    RAISE NOTICE '❌ Ainda há problema no RLS!';
+  END IF;
+END $$; 

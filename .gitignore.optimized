@@ -1,0 +1,158 @@
+# ===================================================================
+# GITIGNORE - ECOFIELD SYSTEM
+# Projeto: Sistema de Lista de Verificação com Vite + React + TypeScript
+# ===================================================================
+
+CLAUDE.md
+.claude
+
+# =========================
+# NODE E BUILD
+# =========================
+**/node_modules/
+**/dist/
+**/build/
+**/out/
+**/dev-dist/
+**/.vite/
+**/.cache/
+**/.parcel-cache/
+.next/
+.nuxt/
+.storybook-out/
+storybook-static/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+.tscache/
+
+# =========================
+# AMBIENTE E CONFIG
+# =========================
+**/.env*
+.supabase/
+supabase/.env
+supabase/config.toml
+config.local.js
+config.local.json
+
+# =========================
+# LOGS E TEMPORÁRIOS
+# =========================
+logs/
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+*.swp
+*.swo
+*.patch
+*.fix
+*.fixes
+*.backup
+*.bkp
+*.install.log
+install_*.sh.log
+
+# =========================
+# SISTEMA OPERACIONAL
+# =========================
+# macOS
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+.fuse_hidden*
+
+# =========================
+# IDE E EDITORES
+# =========================
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+
+# =========================
+# TESTES E RELATÓRIOS
+# =========================
+test-results/
+playwright-report/
+test-results.xml
+*.lcov
+.eslintcache
+.prettiercache
+.stylelintcache
+
+# =========================
+# DADOS E UPLOADS
+# =========================
+uploads/
+static/uploads/
+public/uploads/
+*.db
+*.sqlite
+*.sqlite3
+
+# =========================
+# CERTIFICADOS E CHAVES
+# =========================
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# =========================
+# DOCS GERADOS
+# =========================
+docs/build/
+
+# =========================
+# PACKAGE MANAGERS
+# =========================
+.npm/
+.yarn-integrity
+.pnp
+.pnp.js
+*.tgz
+.node_repl_history
+
+# =========================
+# VITE
+# =========================
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+*.local

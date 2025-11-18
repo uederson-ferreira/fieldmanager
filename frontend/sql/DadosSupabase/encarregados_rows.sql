@@ -1,0 +1,1 @@
+INSERT INTO "public"."encarregados" ("id", "nome_completo", "apelido", "telefone", "empresa_contratada_id", "ativo", "created_at", "updated_at") VALUES ('6c8b1610-92c6-42f7-b804-d7936de5a99f', 'Florivaldo', 'Xuxa 3', '949914574893', '98fab2f9-f1de-43b0-b0bb-ef8ae898dfa0', 'true', '2025-08-28 17:00:23.401917+00', '2025-08-28 17:00:23.401917+00');
