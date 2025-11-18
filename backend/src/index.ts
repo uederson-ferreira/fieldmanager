@@ -19,22 +19,12 @@ import versionRouter from './routes/version';
 import authRouter from './routes/auth';
 import usuariosRouter from './routes/usuarios';
 import fotosRouter from './routes/fotos';
+import syncRouter from './routes/sync';
 
-// Rotas Legadas (mantidas para compatibilidade temporária)
-// MOVIDAS PARA _legacy/: lvs, termos, rotinas, categorias
-import perfisRouter from './routes/perfis';
-import encarregadosRouter from './routes/encarregados';
-import empresasRouter from './routes/empresas';
-import areasRouter from './routes/areas';
-import metasRouter from './routes/metas';
+// Rotas Utilitárias (genéricas)
 import configuracoesRouter from './routes/configuracoes';
 import logsRouter from './routes/logs';
 import backupRouter from './routes/backup';
-import estatisticasRouter from './routes/estatisticas';
-import estatisticasUsuarioRouter from './routes/estatisticas-usuario';
-import historicoRouter from './routes/historico';
-import syncRouter from './routes/sync';
-import acoesCorretivasRouter from './routes/acoesCorretivas';
 
 import { getCurrentTimestamp } from './utils/dateUtils';
 
@@ -171,26 +161,13 @@ app.use('/api/auth', authRouter);
 app.use('/api/usuarios', usuariosRouter);
 app.use('/api', uploadRouter);
 app.use('/api/fotos', fotosRouter);
+app.use('/api/sync', syncRouter);
 app.use('/', versionRouter);
 
-// ===================================================================
-// ROTAS LEGADAS - ECOFIELD (Manter temporariamente)
-// TODO: Migrar dados e depois remover
-// NOTA: Rotas movidas para _legacy/: lvs, termos, rotinas, categorias
-// ===================================================================
-app.use('/api/perfis', perfisRouter);
-app.use('/api/encarregados', encarregadosRouter);
-app.use('/api/empresas', empresasRouter);
-app.use('/api/areas', areasRouter);
-app.use('/api/metas', metasRouter);
+// Rotas Utilitárias
 app.use('/api/configuracoes', configuracoesRouter);
 app.use('/api/logs', logsRouter);
 app.use('/api/backup', backupRouter);
-app.use('/api/estatisticas', estatisticasRouter);
-app.use('/api/estatisticas', estatisticasUsuarioRouter);
-app.use('/api/historico', historicoRouter);
-app.use('/api/sync', syncRouter);
-app.use('/api/acoes-corretivas', acoesCorretivasRouter);
 
 // Rota raiz
 app.get('/', (req, res) => {
