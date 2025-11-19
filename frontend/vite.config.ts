@@ -67,11 +67,11 @@ export default defineConfig({
       },
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
       manifest: {
-        name: "EcoField - Sistema de Gestão Ambiental",
-        short_name: "EcoField",
+        name: "FieldManager - Sistema Multi-Domínio de Gestão",
+        short_name: "FieldManager",
         description:
-          "Sistema completo para gestão de atividades ambientais e rotinas de campo",
-        theme_color: "#10b981",
+          "Sistema completo para gestão multi-domínio de inspeções, auditorias e rotinas de campo",
+        theme_color: "#3b82f6",
         background_color: "#ffffff",
         display: "standalone",
         orientation: "portrait",
@@ -79,13 +79,13 @@ export default defineConfig({
         start_url: "/",
         icons: [
           {
-            src: "icon-192x192.png",
+            src: "icon-192.png",
             sizes: "192x192",
             type: "image/png",
             purpose: "maskable any",
           },
           {
-            src: "icon-512x512.png",
+            src: "icon-512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable any",

@@ -152,7 +152,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack, onSuccess }) =>
         {/* HEADER */}
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <img src="/icon.png" alt="EcoField Logo" className="h-28 w-30" />
+            <img src="/icon.png" alt="FieldManager Logo" className="h-28 w-30" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             Recuperar Senha

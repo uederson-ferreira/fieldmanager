@@ -64,8 +64,11 @@ export const DominioProvider: React.FC<DominioProviderProps> = ({ children, tena
       }
 
       // Se não tem domínio salvo, selecionar o primeiro disponível
-      if (dominios.length > 0 && !dominioAtual) {
-        setDominioAtualState(dominios[0]);
+      // Usar setDominiosDisponiveis para evitar dependência circular
+      if (dominios.length > 0) {
+        setDominiosDisponiveis(dominios);
+        // Só definir se ainda não tem domínio atual
+        setDominioAtualState(prev => prev || dominios[0]);
       }
     } catch (error) {
       console.error('❌ [DominioContext] Erro ao carregar domínios:', error);
@@ -73,7 +76,7 @@ export const DominioProvider: React.FC<DominioProviderProps> = ({ children, tena
     } finally {
       setCarregando(false);
     }
-  }, [tenantId, dominioAtual]);
+  }, [tenantId]); // Removido dominioAtual da dependência
 
   /**
    * Carrega módulos do domínio atual
@@ -97,22 +100,97 @@ export const DominioProvider: React.FC<DominioProviderProps> = ({ children, tena
    * Define o domínio atual e salva no localStorage
    */
   const setDominioAtual = useCallback((dominio: Dominio) => {
+    // Evitar atualização desnecessária
+    if (dominioAtual?.id === dominio.id) {
+      return;
+    }
+    
     setDominioAtualState(dominio);
     localStorage.setItem('fieldmanager_dominio_atual', dominio.id);
     console.log(`✅ [DominioContext] Domínio alterado para: ${dominio.nome}`);
-  }, []);
+  }, [dominioAtual]);
 
-  // Carregar domínios na inicialização
+  // Carregar domínios na inicialização (apenas uma vez)
   useEffect(() => {
-    refreshDominios();
-  }, [refreshDominios]);
+    let mounted = true;
+    
+    const loadDominios = async () => {
+      try {
+        setCarregando(true);
+        setErro(null);
 
-  // Carregar módulos quando o domínio mudar
+        let dominios: Dominio[];
+
+        if (tenantId) {
+          dominios = await dominiosAPI.getDominiosAtivosTenant(tenantId);
+        } else {
+          dominios = await dominiosAPI.getDominios();
+        }
+
+        if (!mounted) return;
+
+        setDominiosDisponiveis(dominios);
+
+        // Restaurar domínio selecionado do localStorage
+        const dominioSalvoId = localStorage.getItem('fieldmanager_dominio_atual');
+
+        if (dominioSalvoId) {
+          const dominioSalvo = dominios.find(d => d.id === dominioSalvoId);
+          if (dominioSalvo) {
+            setDominioAtualState(dominioSalvo);
+            return;
+          }
+        }
+
+        // Se não tem domínio salvo, selecionar o primeiro disponível
+        if (dominios.length > 0) {
+          setDominioAtualState(dominios[0]);
+        }
+      } catch (error) {
+        if (!mounted) return;
+        console.error('❌ [DominioContext] Erro ao carregar domínios:', error);
+        setErro('Erro ao carregar domínios. Por favor, tente novamente.');
+      } finally {
+        if (mounted) {
+          setCarregando(false);
+        }
+      }
+    };
+
+    loadDominios();
+
+    return () => {
+      mounted = false;
+    };
+  }, [tenantId]); // Apenas quando tenantId mudar
+
+  // Carregar módulos quando o domínio mudar (com debounce)
   useEffect(() => {
-    if (dominioAtual) {
-      refreshModulos();
+    if (!dominioAtual) {
+      setModulosDisponiveis([]);
+      return;
     }
-  }, [dominioAtual, refreshModulos]);
+
+    let mounted = true;
+    const timeoutId = setTimeout(async () => {
+      try {
+        const modulos = await dominiosAPI.getModulosDominio(dominioAtual.id, tenantId);
+        if (mounted) {
+          setModulosDisponiveis(modulos);
+        }
+      } catch (error) {
+        if (mounted) {
+          console.error('❌ [DominioContext] Erro ao carregar módulos:', error);
+          setErro('Erro ao carregar módulos. Por favor, tente novamente.');
+        }
+      }
+    }, 300); // Debounce de 300ms
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+    };
+  }, [dominioAtual?.id, tenantId]); // Apenas quando ID do domínio ou tenant mudar
 
   const value: DominioContextType = {
     dominioAtual,

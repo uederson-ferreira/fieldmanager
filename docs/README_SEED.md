@@ -17,7 +17,7 @@ Popula o banco de dados **fieldmanager-production** com dados iniciais para dese
 
 ### 1. Acesse o Supabase Dashboard
 
-```
+```bash
 https://supabase.com/dashboard/project/YOUR_PROJECT_ID
 ```
 
@@ -25,20 +25,28 @@ https://supabase.com/dashboard/project/YOUR_PROJECT_ID
 
 - No menu lateral: **SQL Editor** → **New Query**
 
-### 3. Copie e Cole o Conteúdo
+### 3. Execute o Setup Completo
 
-Abra o arquivo `seed-database.sql` e copie **TODO** o conteúdo para o editor SQL.
+**IMPORTANTE**: Use o arquivo **`00_EXECUTAR_TUDO_SUPABASE.sql`** (compatível com Supabase)
+
+```bash
+# Copie TODO o conteúdo deste arquivo:
+/sql/00_EXECUTAR_TUDO_SUPABASE.sql
+```
+
+**NÃO use** `00_EXECUTAR_TUDO.sql` (esse é para psql local, usa comandos `\i` e `\echo`)
 
 ### 4. Execute o Script
 
+- Cole o conteúdo no SQL Editor
 - Clique em **Run** (ou pressione `Ctrl+Enter`)
-- Aguarde a execução (deve levar ~2 segundos)
+- Aguarde a execução (deve levar ~5 segundos)
 
 ### 5. Verifique os Resultados
 
 Você deve ver no final:
 
-```
+```bash
 Perfis criados: 3
 Domínios criados: 6
 Tenants criados: 1
@@ -53,14 +61,14 @@ Perguntas criadas: 10
 
 Após executar o seed, use estas credenciais para login:
 
-```
+```bash
 Email: admin@fieldmanager.dev
 Senha: Admin@2025
 ```
 
 **IMPORTANTE**: Você ainda precisa criar este usuário no **Supabase Auth**:
 
-### Criar Usuário no Supabase Auth:
+### Criar Usuário no Supabase Auth
 
 1. Vá em **Authentication** → **Users**
 2. Clique em **Add User** → **Create a new user**
@@ -95,7 +103,8 @@ WHERE email = 'admin@fieldmanager.dev';
 
 ### Módulo de Exemplo
 
-**NR-35 - Trabalho em Altura**
+#### **NR-35 - Trabalho em Altura**
+
 - Tipo: Checklist
 - Domínio: Segurança do Trabalho
 - 10 perguntas categorizadas
@@ -114,19 +123,49 @@ WHERE email = 'admin@fieldmanager.dev';
 
 ## 🔄 Para Limpar e Reexecutar
 
-Se precisar resetar:
+Se precisar resetar o banco de dados, você tem **duas opções**:
+
+### Opção 1: Executar setup novamente (recomendado)
+
+O setup agora **ignora registros duplicados**. Basta executar novamente:
+
+```bash
+# No Supabase SQL Editor, copie o conteúdo de:
+/sql/00_EXECUTAR_TUDO_SUPABASE.sql
+```
+
+Os registros que já existem serão ignorados (ON CONFLICT DO NOTHING).
+
+### Opção 2: Limpar tudo e começar do zero
+
+Use o script de limpeza:
+
+```bash
+# No Supabase SQL Editor:
+/sql/limpar-dados.sql
+```
+
+Ou limpe manualmente:
 
 ```sql
 -- CUIDADO: Isso apaga TODOS os dados!
 TRUNCATE TABLE perguntas_modulos CASCADE;
+TRUNCATE TABLE execucoes_respostas CASCADE;
+TRUNCATE TABLE execucoes_fotos CASCADE;
+TRUNCATE TABLE execucoes CASCADE;
 TRUNCATE TABLE modulos_sistema CASCADE;
 TRUNCATE TABLE tenants_dominios CASCADE;
 TRUNCATE TABLE usuarios CASCADE;
 TRUNCATE TABLE tenants CASCADE;
 TRUNCATE TABLE dominios CASCADE;
 TRUNCATE TABLE perfis CASCADE;
+```
 
--- Depois execute novamente o seed-database.sql
+Depois execute o setup completo:
+
+```bash
+# No Supabase SQL Editor:
+/sql/00_EXECUTAR_TUDO.sql
 ```
 
 ---
@@ -134,6 +173,7 @@ TRUNCATE TABLE perfis CASCADE;
 ## 📞 Suporte
 
 Se encontrar erros:
+
 1. Verifique se as tabelas existem (migrations foram executadas?)
 2. Verifique se há dados conflitantes (execute o TRUNCATE acima)
 3. Verifique os logs do Supabase

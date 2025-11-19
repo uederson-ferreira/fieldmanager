@@ -1,5 +1,5 @@
 // ===================================================================
-// COMPONENTE DE LOGIN SIMPLIFICADO ESTILIZADO - ECOFIELD SYSTEM
+// COMPONENTE DE LOGIN SIMPLIFICADO ESTILIZADO - FIELDMANAGER v2.0
 // Localização: src/components/LoginSimple.tsx
 // ===================================================================
 
@@ -38,8 +38,8 @@ const LoginSimple: React.FC<LoginSimpleProps> = ({ onLogin, isLoading, error }) 
 
   const handleTestCredentials2 = () => {
     setFormData({
-      email: 'admin@ecofield.com',
-      password: 'admin123'
+      email: 'admin@fieldmanager.dev',
+      password: 'Admin@2025'
     });
     setValidationErrors([]);
   };
@@ -115,13 +115,22 @@ const LoginSimple: React.FC<LoginSimpleProps> = ({ onLogin, isLoading, error }) 
         {/* HEADER */}
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <img src="/icon.png" alt="EcoField Logo" className="h-28 w-30" />
+            <img 
+              src="/icon.png" 
+              alt="FieldManager Logo" 
+              className="h-28 w-28 object-contain"
+              onError={(e) => {
+                console.error('❌ Erro ao carregar logo:', e);
+                // Fallback para um ícone SVG se a imagem não carregar
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            EcoField System
+            FieldManager
           </h2>
           <p className="text-gray-600 text-lg">
-            Sistema de Gestão
+            Sistema Multi-Domínio de Gestão
           </p>
         </div>
 
@@ -273,7 +282,7 @@ const LoginSimple: React.FC<LoginSimpleProps> = ({ onLogin, isLoading, error }) 
                   className="w-full flex justify-center items-center py-2 px-4 border border-purple-300 rounded-lg text-sm font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-200 shadow-sm"
                 >
                   <TestTube className="h-4 w-4 mr-2" />
-                  Admin (admin@ecofield.com)
+                  Admin (admin@fieldmanager.dev)
                 </button>
               </div>
             )}
@@ -283,7 +292,7 @@ const LoginSimple: React.FC<LoginSimpleProps> = ({ onLogin, isLoading, error }) 
         {/* FOOTER */}
         <div className="text-center">
           <p className="text-xs text-gray-500">
-            Sistema EcoField v1.0.0 - Gestão
+            FieldManager v2.0.0 - Sistema Multi-Domínio
           </p>
           <p className="text-xs text-gray-400 mt-1">
             Desenvolvido por{' '}
@@ -291,7 +300,7 @@ const LoginSimple: React.FC<LoginSimpleProps> = ({ onLogin, isLoading, error }) 
               href="https://github.com/uederson-ferreira" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-green-600 hover:text-green-700 underline transition-colors"
+              className="text-blue-600 hover:text-blue-700 underline transition-colors"
             >
               Uederson Ferreira
             </a>
