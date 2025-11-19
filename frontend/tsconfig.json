@@ -26,8 +26,6 @@
     "composite": true,
     
     // Configurações para resolver problema com Express
-    "types": ["node", "vite/client"],
-    "typeRoots": ["./node_modules/@types"],
     "noImplicitAny": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

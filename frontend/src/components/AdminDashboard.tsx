@@ -1,14 +1,12 @@
 // ===================================================================
-// DASHBOARD ADMINISTRATIVO CORRIGIDO - ECOFIELD SYSTEM
+// DASHBOARD ADMINISTRATIVO - FIELDMANAGER v2.0 (MULTI-DOMÍNIO)
 // Localização: src/components/AdminDashboard.tsx
 // ===================================================================
 
 import React, { useState } from 'react';
 import {
-  Users, FileText, BarChart3, Settings, Database,
-  MapPin, Target,
   Menu, X, LogOut, User, CheckCircle2, AlertTriangle,
-  TrendingUp, Clock, FileCheck, LayoutDashboard, UserCheck, FolderOpen, ClipboardList
+  TrendingUp, Clock, Settings
 } from 'lucide-react';
 import CrudUsuarios from './admin/CrudUsuarios';
 import AdminTermos from './admin/AdminTermos';
@@ -22,6 +20,10 @@ import CrudBackup from './admin/Backup';
 import AdminRotinas from './admin/AdminRotinas';
 import CrudMetas from './admin/CrudMetas';
 import DetalhamentoPorUsuario from './admin/DetalhamentoPorUsuario';
+import DominioSelector from './common/DominioSelector';
+import { NavigationSection } from './common/DynamicNavigation';
+import { useMenuAdmin, useMenuItem } from '../hooks/useMenuDinamico';
+import { useDominio } from '../contexts/DominioContext';
 import type { UserData } from '../types/entities';
 
 interface AdminDashboardProps {
@@ -35,14 +37,19 @@ interface AdminDashboardProps {
   };
 }
 
-type ActiveSection = 'dashboard' | 'usuarios' | 'perfis' | 'categorias' | 'areas' | 'relatorios' | 'configuracoes' | 'backup' | 'termos' | 'rotinas' | 'lvs' | 'metas' | 'detalhamento';
-
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, loginInfo }) => {
-  const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
-  // Mobile-first: sidebar fechado no mobile, aberto no desktop
+  // Hooks do sistema multi-domínio
+  const menuSections = useMenuAdmin();
+  const { dominioAtual } = useDominio();
+
+  // State local
+  const [activeSection, setActiveSection] = useState<string>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
   const [atividadesRecentes, setAtividadesRecentes] = useState<any[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
+
+  // Buscar item de menu atual
+  const currentMenuItem = useMenuItem(menuSections, activeSection);
 
   // Buscar atividades recentes
   React.useEffect(() => {
@@ -81,53 +88,57 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, loginIn
   }, [activeSection]);
 
   // ===================================================================
-  // MENU DE NAVEGAÇÃO - ORGANIZADO POR SEÇÕES
+  // RENDERIZAÇÃO DE MÓDULOS DINÂMICOS
   // ===================================================================
 
-  const menuSections = [
-    {
-      title: 'Visão Geral',
-      items: [
-        { id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard, badge: null },
-        { id: 'relatorios' as const, label: 'Relatórios', icon: BarChart3, badge: null },
-      ]
-    },
-    {
-      title: 'Gestão de Campo',
-      items: [
-        { id: 'lvs' as const, label: 'Listas de Verificação', icon: ClipboardList, badge: null },
-        { id: 'termos' as const, label: 'Termos Ambientais', icon: FileCheck, badge: null },
-        { id: 'rotinas' as const, label: 'Atividades de Rotina', icon: Clock, badge: null },
-        { id: 'metas' as const, label: 'Metas', icon: Target, badge: null },
-      ]
-    },
-    {
-      title: 'Configurações',
-      items: [
-        { id: 'usuarios' as const, label: 'Usuários', icon: Users, badge: null },
-        { id: 'perfis' as const, label: 'Perfis', icon: UserCheck, badge: null },
-        { id: 'areas' as const, label: 'Áreas', icon: MapPin, badge: null },
-        { id: 'categorias' as const, label: 'Categorias LV', icon: FolderOpen, badge: null },
-      ]
-    },
-    {
-      title: 'Sistema',
-      items: [
-        { id: 'configuracoes' as const, label: 'Configurações', icon: Settings, badge: null },
-        { id: 'backup' as const, label: 'Backup & Restore', icon: Database, badge: null },
-      ]
-    }
-  ];
+  const renderModuloContent = (moduleId: string) => {
+    // TODO: Implementar componente genérico para execução de módulos
+    // Por enquanto, retorna placeholder
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <div className="text-emerald-400 mb-4">
+          <Settings className="h-16 w-16 mx-auto" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          {currentMenuItem?.label || 'Módulo'}
+        </h3>
+        <p className="text-gray-600 mb-2">
+          Domínio: <span className="font-medium" style={{ color: dominioAtual?.cor_primaria }}>
+            {dominioAtual?.nome}
+          </span>
+        </p>
+        <p className="text-gray-600 mb-4">
+          Módulo ID: <code className="bg-gray-100 px-2 py-1 rounded text-xs">{moduleId}</code>
+        </p>
+        <p className="text-sm text-gray-500 mb-4">
+          O formulário dinâmico para execução deste módulo será implementado na próxima etapa.
+        </p>
+        <button
+          onClick={() => setActiveSection('dashboard')}
+          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+        >
+          Voltar ao Dashboard
+        </button>
+      </div>
+    );
+  };
 
   // ===================================================================
   // RENDERIZAR CONTEÚDO
   // ===================================================================
 
   const renderContent = () => {
+    // Verificar se é um módulo dinâmico (ID começa com "modulo_")
+    if (activeSection.startsWith('modulo_')) {
+      const moduleId = activeSection.replace('modulo_', '');
+      return renderModuloContent(moduleId);
+    }
+
+    // Rotas estáticas
     switch (activeSection) {
       case 'usuarios':
         return <CrudUsuarios />;
-      
+
       case 'areas':
         return <CrudAreas />;
 
@@ -137,6 +148,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, loginIn
       case 'dashboard':
         return (
           <div className="space-y-6">
+            {/* Seletor de Domínio */}
+            <DominioSelector />
+
             {/* Header do Dashboard */}
             <div className="flex items-center justify-between">
               <div>
@@ -144,9 +158,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, loginIn
                 <p className="text-gray-600 mt-1">
                   Bem-vindo, {user.nome} - {loginInfo.source}
                 </p>
+                {dominioAtual && (
+                  <p className="text-sm mt-1" style={{ color: dominioAtual.cor_primaria }}>
+                    {dominioAtual.icone} {dominioAtual.nome}
+                  </p>
+                )}
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <span>v{import.meta.env.VITE_APP_VERSION || '1.4.0'}</span>
+                <span>v{import.meta.env.VITE_APP_VERSION || '2.0.0'}</span>
                 {import.meta.env.DEV && (
                   <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
                     DEV
@@ -289,24 +308,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, loginIn
         return <DetalhamentoPorUsuario onBack={() => setActiveSection('relatorios')} />;
 
       default:
-        const currentItem = menuSections
-          .flatMap(section => section.items)
-          .find(item => item.id === activeSection);
-
         return (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
             <div className="text-gray-400 mb-4">
               <Settings className="h-16 w-16 mx-auto" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {currentItem?.label || 'Seção Desconhecida'}
+              {currentMenuItem?.label || 'Seção Desconhecida'}
             </h3>
             <p className="text-gray-600 mb-4">
               Esta funcionalidade está em desenvolvimento.
             </p>
             <button
               onClick={() => setActiveSection('dashboard')}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
             >
               Voltar ao Dashboard
             </button>
@@ -320,10 +335,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, loginIn
   // ===================================================================
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-green-50 overflow-hidden w-full">
+    <div className="flex flex-col md:flex-row h-screen bg-gray-50 overflow-hidden w-full">
       {/* Mobile Header */}
       <div className="md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">EcoField Admin</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-900">FieldManager</h2>
+          {dominioAtual && (
+            <span className="text-xs px-2 py-1 rounded-full" style={{
+              backgroundColor: `${dominioAtual.cor_primaria}20`,
+              color: dominioAtual.cor_primaria
+            }}>
+              {dominioAtual.nome}
+            </span>
+          )}
+        </div>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -352,7 +377,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, loginIn
         <div className="hidden md:flex p-4 border-b border-gray-200">
           <div className="flex items-center justify-between w-full">
             {sidebarOpen && (
-              <h2 className="text-lg font-semibold text-gray-900">EcoField Admin</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                FieldManager
+                <span className="block text-xs text-gray-500 font-normal">Admin</span>
+              </h2>
             )}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -363,57 +391,53 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, loginIn
           </div>
         </div>
 
-        {/* Menu Items - Organizado por Seções */}
+        {/* Menu Items - Dinâmico por Domínio */}
         <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
-          {menuSections.map((section, sectionIndex) => (
-            <div key={sectionIndex}>
-              {sidebarOpen && (
-                <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  {section.title}
-                </h3>
-              )}
-              <div className="space-y-1">
-                {section.items.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setActiveSection(item.id);
-                      // Fechar sidebar no mobile após clicar
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                    className={`
-                      w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors
-                      ${activeSection === item.id
-                        ? 'bg-green-50 text-green-700 border border-green-200 font-medium'
-                        : 'text-gray-700 hover:bg-gray-50'
-                      }
-                    `}
-                    title={!sidebarOpen ? item.label : ''}
-                  >
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
-                    {sidebarOpen && (
-                      <>
-                        <span className="ml-3 flex-1 text-sm">{item.label}</span>
-                        {item.badge && (
-                          <span className="ml-auto bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-                            {item.badge}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </button>
-                ))}
-              </div>
+          {sidebarOpen ? (
+            // Modo expandido: mostrar seções completas
+            menuSections.map((section, sectionIndex) => (
+              <NavigationSection
+                key={sectionIndex}
+                section={section}
+                activeItemId={activeSection}
+                onItemClick={(itemId) => {
+                  setActiveSection(itemId);
+                  // Fechar sidebar no mobile após clicar
+                  if (window.innerWidth < 768) {
+                    setSidebarOpen(false);
+                  }
+                }}
+              />
+            ))
+          ) : (
+            // Modo compacto: mostrar apenas ícones
+            <div className="space-y-1">
+              {menuSections.flatMap(section => section.items).map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveSection(item.id)}
+                  className={`
+                    w-full flex items-center justify-center px-3 py-2 rounded-lg transition-colors
+                    ${activeSection === item.id
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'text-gray-700 hover:bg-gray-50'
+                    }
+                  `}
+                  title={item.label}
+                >
+                  <item.icon className="h-5 w-5" />
+                </button>
+              ))}
             </div>
-          ))}
+          )}
         </nav>
 
         {/* User Info e Logout */}
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 bg-green-600 rounded-full flex items-center justify-center">
+            <div className="h-8 w-8 rounded-full flex items-center justify-center" style={{
+              backgroundColor: dominioAtual?.cor_primaria || '#10b981'
+            }}>
               <User className="h-4 w-4 text-white" />
             </div>
             {sidebarOpen && (

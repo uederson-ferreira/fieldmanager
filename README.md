@@ -37,19 +37,19 @@ FieldManager é uma plataforma PWA (Progressive Web App) completa e escalável p
 
 \`\`\`bash
 
-# Clonar repositório
+## Clonar repositório
 
 git clone <https://github.com/SEU_USUARIO/fieldmanager.git>
 cd fieldmanager
 
-# Frontend
+## Frontend
 
 cd frontend
 cp .env.example .env  # Configurar credenciais Supabase
 pnpm install
 pnpm dev
 
-# Backend (em outro terminal)
+## Backend (em outro terminal)
 
 cd backend
 cp .env.example .env  # Configurar credenciais
@@ -75,10 +75,6 @@ Baseado no projeto [EcoField](https://github.com/uedersonferreira/ecofield)
 
 ---
 
-<div align="center">
-
 **FieldManager** - Gestão Inteligente Multi-Domínio
 
 Made with ❤️
-
-</div>

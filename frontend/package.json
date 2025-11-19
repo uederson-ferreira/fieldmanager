@@ -81,7 +81,8 @@
   },
   "pnpm": {
     "overrides": {
-      "vite": "^7.0.0"
+      "vite": "^7.0.0",
+      "lru-cache": "^7.18.3"
     },
     "peerDependencyRules": {
       "allowedVersions": {
