@@ -13,7 +13,8 @@ import {
   FolderOpen,
   Settings,
   Database,
-  Target
+  Target,
+  ClipboardList
 } from 'lucide-react';
 import { useDominio } from '../contexts/DominioContext';
 import {
@@ -93,6 +94,7 @@ export function useMenuTecnico(): MenuSection[] {
         title: 'Início',
         items: [
           { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
+          { id: 'historico', label: 'Histórico', icon: ClipboardList, badge: null },
         ]
       },
     ];

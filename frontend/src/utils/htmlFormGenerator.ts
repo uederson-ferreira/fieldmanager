@@ -1,4 +1,4 @@
-import { lvAPI } from '../lib/lvAPI';
+import { lvAPI } from '../_legacy/lib/lvAPI';
 import type { LV, LVFoto } from '../types/lv';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';

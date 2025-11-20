@@ -329,7 +329,7 @@ export const authAPI = {
   },
 
   // Obter sessão atual
-  async getSession() {
+  async getSession(): Promise<{ session: { access_token: string } | null; error?: string }> {
     try {
       const token = getAuthToken();
       if (!token) {

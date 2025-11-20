@@ -8,23 +8,19 @@ import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 
-// Rotas Multi-Domínio (FieldManager v2.0)
+// Rotas FieldManager v2.0 (Multi-Domínio)
 import dominiosRouter from './routes/dominios';
 import modulosSistemaRouter from './routes/modulos-sistema';
 import execucoesRouter from './routes/execucoes';
 
-// Rotas Compartilhadas (usadas por ambos os sistemas)
-import uploadRouter from './routes/upload';
+// Rotas Compartilhadas
 import versionRouter from './routes/version';
 import authRouter from './routes/auth';
 import usuariosRouter from './routes/usuarios';
-import fotosRouter from './routes/fotos';
-import syncRouter from './routes/sync';
 
-// Rotas Utilitárias (genéricas)
-import configuracoesRouter from './routes/configuracoes';
-import logsRouter from './routes/logs';
-import backupRouter from './routes/backup';
+// Rotas Legacy (para compatibilidade)
+import estatisticasRouter from './routes/_legacy/estatisticas';
+import historicoRouter from './routes/_legacy/historico';
 
 import { getCurrentTimestamp } from './utils/dateUtils';
 
@@ -105,13 +101,13 @@ const loginLimiter = rateLimit({
 // 🔒 Rate limiter geral para API - Proteção contra DoS
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minuto
-  max: 100, // 100 requisições por IP por minuto
+  max: 200, // 200 requisições por IP por minuto (aumentado para uploads/assinaturas)
   message: {
     error: 'Muitas requisições. Por favor, aguarde um momento.'
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: false,
+  skipSuccessfulRequests: true, // Não contar requisições bem-sucedidas (permite mais tentativas legítimas)
   handler: (req, res) => {
     console.warn(`⚠️ [RATE LIMIT] Bloqueado requisição de IP: ${req.ip} para ${req.path}`);
     res.status(429).json({
@@ -151,23 +147,19 @@ app.get('/api/health', (req, res) => {
 // ROTAS DA API - FIELDMANAGER v2.0 (MULTI-DOMÍNIO)
 // ===================================================================
 
-// Rotas Multi-Domínio (Novas)
+// Rotas Multi-Domínio
 app.use('/api/dominios', dominiosRouter);
 app.use('/api/modulos-sistema', modulosSistemaRouter);
 app.use('/api/execucoes', execucoesRouter);
 
-// Rotas Gerais (Compartilhadas)
+// Rotas Compartilhadas
 app.use('/api/auth', authRouter);
 app.use('/api/usuarios', usuariosRouter);
-app.use('/api', uploadRouter);
-app.use('/api/fotos', fotosRouter);
-app.use('/api/sync', syncRouter);
 app.use('/', versionRouter);
 
-// Rotas Utilitárias
-app.use('/api/configuracoes', configuracoesRouter);
-app.use('/api/logs', logsRouter);
-app.use('/api/backup', backupRouter);
+// Rotas Legacy (para compatibilidade)
+app.use('/api/estatisticas', estatisticasRouter);
+app.use('/api/historico', historicoRouter);
 
 // Rota raiz
 app.get('/', (req, res) => {

@@ -4,17 +4,23 @@
 // ===================================================================
 
 import { useState, useEffect } from 'react';
-import { Camera, Save, Send, FileText, AlertCircle } from 'lucide-react';
+import { Camera, Save, Send, FileText, AlertCircle, Loader2, Image as ImageIcon } from 'lucide-react';
 import type {
   ModuloCompleto,
   PerguntaModulo,
   CriarExecucaoPayload
 } from '../../types/dominio';
+import { uploadMultipleFotos, type FotoExecucao } from '../../lib/fotosExecucoesAPI';
+import AssinaturaDigital, { type DadosAssinatura } from './AssinaturaDigital';
+import { criarAssinatura, type CriarAssinaturaPayload } from '../../lib/assinaturasAPI';
+import { criarExecucao as criarExecucaoAPI } from '../../lib/execucoesAPI';
 
 interface FormularioDinamicoProps {
   modulo: ModuloCompleto;
   tenantId: string;
   usuarioId: string;
+  usuarioNome: string;
+  usuarioEmail: string;
   onSubmit: (payload: CriarExecucaoPayload) => Promise<void>;
   onSaveDraft?: (payload: CriarExecucaoPayload) => Promise<void>;
   onCancel: () => void;
@@ -41,6 +47,8 @@ export default function FormularioDinamico({
   modulo,
   tenantId,
   usuarioId,
+  usuarioNome,
+  usuarioEmail,
   onSubmit,
   onSaveDraft,
   onCancel,
@@ -57,6 +65,11 @@ export default function FormularioDinamico({
   const [categoriaAtiva, setCategoriaAtiva] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+
+  // Estados para assinatura digital
+  const [mostrarAssinatura, setMostrarAssinatura] = useState(false);
+  const [dadosAssinatura, setDadosAssinatura] = useState<DadosAssinatura | null>(null);
+  const [execucaoIdParaAssinatura, setExecucaoIdParaAssinatura] = useState<string | null>(null);
 
   // Agrupar perguntas por categoria
   const perguntasPorCategoria = modulo.perguntas.reduce((acc, pergunta) => {
@@ -220,6 +233,152 @@ export default function FormularioDinamico({
     reader.readAsDataURL(file);
   };
 
+  // Gerar imagem de teste
+  const gerarImagemTeste = (texto: string): Promise<File> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 600;
+      const ctx = canvas.getContext('2d')!;
+
+      // Fundo gradiente
+      const gradient = ctx.createLinearGradient(0, 0, 800, 600);
+      gradient.addColorStop(0, '#3b82f6');
+      gradient.addColorStop(1, '#2563eb');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 800, 600);
+
+      // Texto central
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 48px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🧪 FOTO DE TESTE', 400, 250);
+      ctx.font = '32px Arial';
+      ctx.fillText(texto, 400, 320);
+      ctx.font = '24px Arial';
+      ctx.fillText('FieldManager v2.0', 400, 380);
+
+      // Converter para blob e depois File
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], `foto-teste-${Date.now()}.png`, {
+            type: 'image/png'
+          });
+          resolve(file);
+        } else {
+          // Fallback: criar arquivo vazio se canvas falhar
+          resolve(new File([''], 'foto-teste.png', { type: 'image/png' }));
+        }
+      }, 'image/png');
+    });
+  };
+
+  // Preencher com dados de teste
+  const preencherComDadosTeste = async () => {
+    console.log('🧪 [FormularioDinamico] Preenchendo com dados de teste');
+
+    // Preencher dados gerais
+    setDadosGerais({
+      local: 'Área de Testes - Setor A',
+      responsavel: 'João da Silva',
+      empresa: 'Empresa Teste Ltda',
+      observacoes_gerais: 'Preenchimento automático para testes do sistema.'
+    });
+
+    // Preencher respostas das perguntas
+    const respostasTeste: Record<string, RespostaState> = {};
+
+    // TODAS as perguntas que permitem foto receberão fotos
+    const perguntasComFoto: PerguntaModulo[] = modulo.perguntas
+      .filter((p) => p.permite_foto);
+
+    // Preencher respostas
+    for (let index = 0; index < modulo.perguntas.length; index++) {
+      const pergunta = modulo.perguntas[index];
+      
+      // Alternar entre Conforme, Não Conforme e N/A
+      let resposta: string;
+      let booleana: boolean | undefined;
+      let obs: string | undefined;
+
+      if (index % 3 === 0) {
+        // Conforme
+        resposta = 'C';
+        booleana = true;
+        obs = 'Item conforme. Teste automático.';
+      } else if (index % 3 === 1) {
+        // Não Conforme
+        resposta = 'NC';
+        booleana = false;
+        obs = 'Item não conforme detectado. Requer atenção. Teste automático.';
+      } else {
+        // N/A
+        resposta = 'NA';
+        booleana = undefined;
+        obs = 'Não se aplica neste contexto. Teste automático.';
+      }
+
+      respostasTeste[pergunta.id] = {
+        pergunta_id: pergunta.id,
+        pergunta_codigo: pergunta.codigo,
+        resposta,
+        resposta_booleana: booleana,
+        observacao: obs
+      };
+    }
+
+    setRespostas(respostasTeste);
+    console.log(`✅ [FormularioDinamico] ${modulo.perguntas.length} perguntas preenchidas automaticamente`);
+
+    // Gerar fotos de teste distribuídas entre TODAS as perguntas
+    // Alternando: 2 fotos na primeira pergunta, 1 na segunda, 2 na terceira, etc.
+    if (perguntasComFoto.length > 0) {
+      const fotosPromises: Promise<FotoState | null>[] = [];
+
+      // Para cada pergunta que permite foto
+      perguntasComFoto.forEach((pergunta, index) => {
+        // Primeira pergunta: 2 fotos, Segunda: 1 foto, Terceira: 2 fotos, etc.
+        const numFotos = index % 2 === 0 ? 2 : 1;
+
+        // Gerar o número de fotos para esta pergunta
+        for (let i = 0; i < numFotos; i++) {
+          fotosPromises.push(
+            (async () => {
+              try {
+                await new Promise(resolve => setTimeout(resolve, i * 50)); // Delay para IDs únicos
+                const fotoFile = await gerarImagemTeste(`${pergunta.codigo} (${i + 1}/${numFotos})`);
+                const preview = await new Promise<string>((resolve) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => resolve(reader.result as string);
+                  reader.readAsDataURL(fotoFile);
+                });
+
+                return {
+                  pergunta_id: pergunta.id,
+                  pergunta_codigo: pergunta.codigo,
+                  file: fotoFile,
+                  preview,
+                  descricao: `Foto ${i + 1} de ${numFotos} - ${pergunta.codigo}`
+                };
+              } catch (error) {
+                console.warn(`⚠️ Erro ao gerar foto para ${pergunta.codigo}:`, error);
+                return null;
+              }
+            })()
+          );
+        }
+      });
+
+      console.log(`📸 [FormularioDinamico] Gerando ${fotosPromises.length} fotos distribuídas...`);
+      const fotosGeradas = await Promise.all(fotosPromises);
+      const fotosValidas = fotosGeradas.filter(f => f !== null) as FotoState[];
+
+      setFotos(fotosValidas);
+      console.log(`✅ [FormularioDinamico] ${fotosValidas.length} fotos de teste adicionadas em ${perguntasComFoto.length} perguntas`);
+    }
+  };
+
   // Validar formulário
   const validarFormulario = (): boolean => {
     const erros: string[] = [];
@@ -235,33 +394,178 @@ export default function FormularioDinamico({
     return erros.length === 0;
   };
 
-  // Submeter formulário
-  const handleSubmit = async (status: 'rascunho' | 'concluido') => {
-    if (status === 'concluido' && !validarFormulario()) {
+  // Callback quando assinatura é concluída
+  const handleAssinaturaConcluida = async (assinatura: DadosAssinatura) => {
+    // Proteção contra duplo submit
+    if (loading) {
+      console.warn('⚠️ [FormularioDinamico] Já está processando, ignorando duplo submit');
       return;
     }
 
+    console.log('✍️ [FormularioDinamico] Assinatura capturada, processando execução...');
+    setDadosAssinatura(assinatura);
+    setMostrarAssinatura(false);
     setLoading(true);
 
     try {
+      // PASSO 1: Criar execução PRIMEIRO (sem fotos ainda)
       const payload: CriarExecucaoPayload = {
         tenant_id: tenantId,
         modulo_id: modulo.id,
         usuario_id: usuarioId,
-        status,
-        dados_execucao: dadosGerais,
-        observacoes_gerais: dadosGerais.observacoes_gerais,
+        status: 'concluido',
+        local_atividade: dadosGerais.local,
+        responsavel_tecnico: dadosGerais.responsavel,
+        observacoes: dadosGerais.observacoes_gerais,
+        campos_customizados: {
+          empresa: dadosGerais.empresa,
+          fotos: [] // Fotos serão adicionadas depois
+        },
         respostas: Object.values(respostas)
       };
 
-      if (status === 'rascunho' && onSaveDraft) {
+      console.log('💾 [FormularioDinamico] Salvando execução...');
+      const execucaoCriada = await criarExecucaoAPI(payload);
+      console.log('✅ [FormularioDinamico] Execução criada:', execucaoCriada.id);
+
+      // PASSO 2: Upload de fotos usando o ID real da execução
+      let fotosUpload: FotoExecucao[] = [];
+      if (fotos.length > 0) {
+        console.log(`📸 [FormularioDinamico] Fazendo upload de ${fotos.length} fotos...`);
+
+        const { success, data, errors } = await uploadMultipleFotos(
+          fotos.map((f) => ({
+            file: f.file,
+            perguntaId: f.pergunta_id,
+            perguntaCodigo: f.pergunta_codigo,
+            descricao: f.descricao
+          })),
+          execucaoCriada.id // Usar ID real da execução
+        );
+
+        if (success && data) {
+          fotosUpload = data;
+          console.log(`✅ [FormularioDinamico] ${fotosUpload.length} fotos enviadas`);
+        }
+
+        if (errors && errors.length > 0) {
+          console.warn('⚠️ [FormularioDinamico] Alguns uploads falharam:', errors);
+        }
+      }
+
+      // PASSO 3: Salvar assinatura digital vinculada à execução
+      console.log('✍️ [FormularioDinamico] Salvando assinatura digital...');
+      const payloadAssinatura: CriarAssinaturaPayload = {
+        execucaoId: execucaoCriada.id,
+        tenantId,
+        usuarioId,
+        dadosAssinatura: assinatura,
+        localAssinatura: dadosGerais.local,
+        cargoResponsavel: dadosGerais.responsavel,
+        observacoes: dadosGerais.observacoes_gerais
+      };
+
+      await criarAssinatura(payloadAssinatura);
+      console.log('✅ [FormularioDinamico] Assinatura digital salva com sucesso');
+
+      // Disparar evento para atualizar dashboard e estatísticas
+      window.dispatchEvent(new Event('execucaoCriada'));
+      console.log('🔔 [FormularioDinamico] Evento execucaoCriada disparado');
+
+      // Chamar callback de sucesso (para navegação e mensagem)
+      // Passar informações da execução criada, não o payload original
+      await onSubmit({
+        ...payload,
+        id: execucaoCriada.id,
+        numero_documento: execucaoCriada.numero_documento,
+        created_at: execucaoCriada.created_at
+      });
+
+    } catch (error) {
+      console.error('❌ [FormularioDinamico] Erro ao processar execução com assinatura:', error);
+      setErrors(['Erro ao salvar execução com assinatura. Tente novamente.']);
+      setLoading(false);
+    }
+  };
+
+  // Submeter formulário
+  const handleSubmit = async (status: 'rascunho' | 'concluido') => {
+    // Proteção contra duplo submit
+    if (loading) {
+      console.warn('⚠️ [FormularioDinamico] Já está processando, ignorando duplo submit');
+      return;
+    }
+
+    if (status === 'concluido' && !validarFormulario()) {
+      return;
+    }
+
+    // Se for conclusão, mostrar modal de assinatura
+    if (status === 'concluido') {
+      console.log('✍️ [FormularioDinamico] Solicitando assinatura digital...');
+      setMostrarAssinatura(true);
+      return;
+    }
+
+    // Salvar rascunho (sem assinatura)
+    setLoading(true);
+
+    try {
+      // PASSO 1: Criar execução PRIMEIRO (sem fotos ainda)
+      const payload: CriarExecucaoPayload = {
+        tenant_id: tenantId,
+        modulo_id: modulo.id,
+        usuario_id: usuarioId,
+        status: 'rascunho',
+        local_atividade: dadosGerais.local,
+        responsavel_tecnico: dadosGerais.responsavel,
+        observacoes: dadosGerais.observacoes_gerais,
+        campos_customizados: {
+          empresa: dadosGerais.empresa,
+          fotos: [] // Fotos serão adicionadas depois
+        },
+        respostas: Object.values(respostas)
+      };
+
+      console.log('💾 [FormularioDinamico] Salvando rascunho...');
+      const execucaoCriada = await criarExecucaoAPI(payload);
+      console.log('✅ [FormularioDinamico] Rascunho criado:', execucaoCriada.id);
+
+      // Disparar evento para atualizar dashboard e estatísticas
+      window.dispatchEvent(new Event('execucaoCriada'));
+      console.log('🔔 [FormularioDinamico] Evento execucaoCriada disparado (rascunho)');
+
+      // PASSO 2: Upload de fotos usando o ID real da execução
+      let fotosUpload: FotoExecucao[] = [];
+      if (fotos.length > 0) {
+        console.log(`📸 [FormularioDinamico] Fazendo upload de ${fotos.length} fotos...`);
+
+        const { success, data, errors } = await uploadMultipleFotos(
+          fotos.map((f) => ({
+            file: f.file,
+            perguntaId: f.pergunta_id,
+            perguntaCodigo: f.pergunta_codigo,
+            descricao: f.descricao
+          })),
+          execucaoCriada.id // Usar ID real da execução
+        );
+
+        if (success && data) {
+          fotosUpload = data;
+          console.log(`✅ [FormularioDinamico] ${fotosUpload.length} fotos enviadas`);
+        }
+
+        if (errors && errors.length > 0) {
+          console.warn('⚠️ [FormularioDinamico] Alguns uploads falharam:', errors);
+        }
+      }
+
+      if (onSaveDraft) {
         await onSaveDraft(payload);
-      } else {
-        await onSubmit(payload);
       }
     } catch (error) {
-      console.error('Erro ao submeter formulário:', error);
-      setErrors(['Erro ao salvar formulário. Tente novamente.']);
+      console.error('Erro ao salvar rascunho:', error);
+      setErrors(['Erro ao salvar rascunho. Tente novamente.']);
     } finally {
       setLoading(false);
     }
@@ -305,6 +609,21 @@ export default function FormularioDinamico({
               />
             </div>
           </div>
+
+          {/* Botão de Teste (DEV apenas) */}
+          {import.meta.env.DEV && (
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={preencherComDadosTeste}
+                className="w-full px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+              >
+                <span>🧪</span>
+                Preencher com Dados de Teste
+                <span className="text-xs opacity-75">(DEV)</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -491,6 +810,16 @@ export default function FormularioDinamico({
       {/* Ações */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
         <div className="max-w-4xl mx-auto px-4 py-4">
+          {/* Indicador de fotos pendentes */}
+          {fotos.length > 0 && (
+            <div className="mb-3 flex items-center gap-2 text-sm text-gray-600 bg-blue-50 px-3 py-2 rounded-lg">
+              <ImageIcon className="w-4 h-4 text-blue-600" />
+              <span>
+                <strong>{fotos.length}</strong> {fotos.length === 1 ? 'foto será enviada' : 'fotos serão enviadas'}
+              </span>
+            </div>
+          )}
+
           <div className="flex gap-3">
             {onSaveDraft && (
               <button
@@ -498,8 +827,8 @@ export default function FormularioDinamico({
                 disabled={loading}
                 className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition-colors disabled:opacity-50"
               >
-                <Save className="w-5 h-5" />
-                Salvar Rascunho
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                {loading ? 'Salvando...' : 'Salvar Rascunho'}
               </button>
             )}
             <button
@@ -507,12 +836,25 @@ export default function FormularioDinamico({
               disabled={loading}
               className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition-colors disabled:opacity-50"
             >
-              <Send className="w-5 h-5" />
-              {loading ? 'Enviando...' : 'Finalizar'}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+              {loading ? (fotos.length > 0 ? 'Enviando fotos...' : 'Enviando...') : 'Finalizar'}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Modal de Assinatura Digital */}
+      {mostrarAssinatura && (
+        <AssinaturaDigital
+          usuarioNome={usuarioNome}
+          usuarioEmail={usuarioEmail}
+          onAssinaturaConcluida={handleAssinaturaConcluida}
+          onCancelar={() => setMostrarAssinatura(false)}
+          titulo="Assinatura Digital da Execução"
+          descricao={`${modulo.nome} - ${dadosGerais.local || 'Local não informado'}`}
+          requerSenha={true}
+        />
+      )}
     </div>
   );
 }

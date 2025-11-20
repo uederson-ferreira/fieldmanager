@@ -49,9 +49,10 @@ VITE_SUPABASE_ANON_KEY
 CODECOV_TOKEN
 ```
 
-#### Como obter os valores:
+#### Como obter os valores
 
 **VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY:**
+
 1. Acesse seu projeto no Supabase
 2. Vá para Settings → API
 3. Copie os valores:
@@ -59,7 +60,8 @@ CODECOV_TOKEN
    - anon/public key → `VITE_SUPABASE_ANON_KEY`
 
 **CODECOV_TOKEN (opcional):**
-1. Crie uma conta em https://about.codecov.io/
+
+1. Crie uma conta em <https://about.codecov.io/>
 2. Adicione seu repositório
 3. Copie o token fornecido
 4. Cole no GitHub como secret `CODECOV_TOKEN`
@@ -92,10 +94,12 @@ Repita para a branch `develop` se usar Gitflow.
 ### 1. Tests Workflow (`tests.yml`)
 
 **Quando executa:**
+
 - Push em `main` ou `develop`
 - Pull Request para `main` ou `develop`
 
 **O que faz:**
+
 1. Instala dependências
 2. Executa type checking
 3. Executa todos os 235 testes
@@ -106,6 +110,7 @@ Repita para a branch `develop` se usar Gitflow.
 **Duração:** ~1-2 minutos (com cache)
 
 **Exemplo de uso:**
+
 ```bash
 # Criar branch e fazer alterações
 git checkout -b feature/nova-funcionalidade
@@ -123,10 +128,12 @@ git push origin feature/nova-funcionalidade
 ### 2. Build Workflow (`build.yml`)
 
 **Quando executa:**
+
 - Push em `main` ou `develop`
 - Pull Request para `main` ou `develop`
 
 **O que faz:**
+
 1. Instala dependências
 2. Executa build de produção
 3. Verifica tamanho do bundle
@@ -135,6 +142,7 @@ git push origin feature/nova-funcionalidade
 **Duração:** ~2-3 minutos (com cache)
 
 **Como baixar artifacts:**
+
 1. Vá para **Actions** no GitHub
 2. Clique no workflow "Build"
 3. Clique em um run específico
@@ -145,10 +153,12 @@ git push origin feature/nova-funcionalidade
 ### 3. Lint Workflow (`lint.yml`)
 
 **Quando executa:**
+
 - Push em `main` ou `develop`
 - Pull Request para `main` ou `develop`
 
 **O que faz:**
+
 1. Instala dependências
 2. Executa ESLint em todos os arquivos
 3. Falha se encontrar erros ou warnings
@@ -156,6 +166,7 @@ git push origin feature/nova-funcionalidade
 **Duração:** ~1 minuto (com cache)
 
 **Como corrigir erros de lint:**
+
 ```bash
 # Localmente, execute:
 pnpm lint:fix
@@ -203,6 +214,7 @@ Quando você abrir um PR, verá:
 **Causa:** GitHub Actions desabilitado ou permissões incorretas
 
 **Solução:**
+
 1. Vá para **Settings** → **Actions** → **General**
 2. Verifique se "Actions permissions" está habilitado
 3. Verifique "Workflow permissions"
@@ -214,6 +226,7 @@ Quando você abrir um PR, verá:
 **Causa:** Secrets não configurados
 
 **Solução:**
+
 1. Vá para **Settings** → **Secrets and variables** → **Actions**
 2. Adicione `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`
 3. Re-execute o workflow
@@ -225,6 +238,7 @@ Quando você abrir um PR, verá:
 **Causa:** Diferença de ambiente ou cache
 
 **Solução:**
+
 ```bash
 # Limpe cache local:
 pnpm clean
@@ -244,6 +258,7 @@ pnpm type-check
 **Causa:** Lock file alterado
 
 **Solução:**
+
 - O cache é invalidado quando `pnpm-lock.yaml` muda
 - Commit as alterações do lock file
 - Próximo run usará cache atualizado
@@ -327,7 +342,7 @@ Se você configurou o Codecov, terá:
 3. **Comentários automáticos** em PRs
 4. **Alertas** quando cobertura cai
 
-**Acessar:** https://app.codecov.io/gh/[seu-usuario]/ecofield
+**Acessar:** <https://app.codecov.io/gh/[seu-usuario]/ecofield>
 
 ---
 
@@ -349,15 +364,18 @@ Para ver estatísticas dos workflows:
 Os seguintes critérios **devem** ser atendidos para merge:
 
 ### ✅ Testes (tests.yml)
+
 - Todos os 235 testes passando
 - Type checking sem erros
 - Cobertura >= 70%
 
 ### ✅ Build (build.yml)
+
 - Build de produção compilando sem erros
 - Bundle size dentro do limite
 
 ### ✅ Lint (lint.yml)
+
 - Zero erros de ESLint
 - Zero warnings críticos
 
@@ -370,6 +388,7 @@ Os seguintes critérios **devem** ser atendidos para merge:
 ### Reduzir Tempo de Execução
 
 Já implementado:
+
 - ✅ Cache do pnpm store
 - ✅ Cache do node_modules
 - ✅ Execução paralela (matrix strategy)
@@ -386,6 +405,7 @@ Já implementado:
 ## 📚 RECURSOS ÚTEIS
 
 ### Documentação Oficial
+
 - [GitHub Actions Docs](https://docs.github.com/en/actions)
 - [Workflow Syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
 - [pnpm Action](https://github.com/pnpm/action-setup)

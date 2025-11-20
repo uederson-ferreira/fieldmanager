@@ -4,7 +4,7 @@
 // ===================================================================
 
 import { useState, useCallback, useEffect } from 'react';
-import { estatisticasAPI } from '../lib/estatisticasAPI';
+import { estatisticasAPI } from '../_legacy/lib/estatisticasAPI';
 import { unifiedCache } from '../lib/unifiedCache';
 import { useOnlineStatus } from './useOnlineStatus';
 import { handleError } from '../utils/errorHandler';
@@ -245,6 +245,15 @@ export const useDashboardStats = (user: UserData) => {
   const refreshStats = useCallback(async () => {
     console.log('🔄 [DASHBOARD STATS] Refresh solicitado');
     
+    // Invalidar cache antes de recarregar
+    try {
+      const cacheKey = `dashboard_stats_${user.id}`;
+      await unifiedCache.remove(cacheKey);
+      console.log('🗑️ [DASHBOARD STATS] Cache invalidado');
+    } catch (error) {
+      console.warn('⚠️ [DASHBOARD STATS] Erro ao invalidar cache:', error);
+    }
+    
     setStats(prev => ({ ...prev, loading: true }));
     setError(null);
 
@@ -260,7 +269,31 @@ export const useDashboardStats = (user: UserData) => {
     } finally {
       setStats(prev => ({ ...prev, loading: false }));
     }
-  }, [carregarEstatisticas]);
+  }, [carregarEstatisticas, user.id]);
+
+  // ===================================================================
+  // LISTENER PARA EVENTOS DE ATUALIZAÇÃO
+  // ===================================================================
+
+  useEffect(() => {
+    const handleTermoSalvo = () => {
+      console.log('🔔 [DASHBOARD STATS] Evento termoSalvo recebido, atualizando stats...');
+      refreshStats();
+    };
+
+    const handleMetaAtualizar = () => {
+      console.log('🔔 [DASHBOARD STATS] Evento meta:atualizar recebido, atualizando stats...');
+      refreshStats();
+    };
+
+    window.addEventListener('termoSalvo', handleTermoSalvo);
+    window.addEventListener('meta:atualizar', handleMetaAtualizar);
+
+    return () => {
+      window.removeEventListener('termoSalvo', handleTermoSalvo);
+      window.removeEventListener('meta:atualizar', handleMetaAtualizar);
+    };
+  }, [refreshStats]);
 
   // ===================================================================
   // RETORNO

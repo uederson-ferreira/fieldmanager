@@ -278,7 +278,7 @@ export function useAuth() {
         setTimeout(async () => {
           try {
             console.log('🔄 [AUTH SIMPLE] Iniciando pré-carregamento de dados...');
-            const lvAPI = await import('../lib/lvAPI');
+            const lvAPI = await import('../_legacy/lib/lvAPI');
             await lvAPI.lvAPI.preloadLVData();
           } catch (error) {
             console.warn('⚠️ [AUTH SIMPLE] Erro no pré-carregamento:', error);

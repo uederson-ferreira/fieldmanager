@@ -5,8 +5,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Lock, AlertCircle, ArrowLeft, Eye, EyeOff, CheckCircle, Shield } from 'lucide-react';
-import { validatePasswordStrength } from '../utils/authUtils';
-import { authAPI } from '../lib/authAPI';
+import { validatePasswordStrength } from '../../utils/authUtils';
+import { authAPI } from '../../lib/authAPI';
 
 interface ResetPasswordProps {
   onBack: () => void;

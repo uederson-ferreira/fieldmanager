@@ -1,259 +1,464 @@
-# 🌿 EcoField - Sistema de Gestão Ambiental
+# FieldManager v2.0 - Frontend
 
-[![Tests](https://github.com/[seu-usuario]/ecofield/actions/workflows/tests.yml/badge.svg)](https://github.com/[seu-usuario]/ecofield/actions/workflows/tests.yml)
-[![Build](https://github.com/[seu-usuario]/ecofield/actions/workflows/build.yml/badge.svg)](https://github.com/[seu-usuario]/ecofield/actions/workflows/build.yml)
-[![Lint](https://github.com/[seu-usuario]/ecofield/actions/workflows/lint.yml/badge.svg)](https://github.com/[seu-usuario]/ecofield/actions/workflows/lint.yml)
-[![codecov](https://codecov.io/gh/[seu-usuario]/ecofield/branch/main/graph/badge.svg)](https://codecov.io/gh/[seu-usuario]/ecofield)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18.3-61dafb.svg)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-7.0-646cff.svg)](https://vitejs.dev/)
+> **Plataforma Multi-Domínio para Gestão de Compliance e Execuções**
 
-Progressive Web Application (PWA) para gestão ambiental com suporte offline completo. Desenvolvido para técnicos de campo realizarem inspeções, verificações (LV), gestão de resíduos e atividades de rotina em áreas sem conectividade.
+Sistema web moderno para execução de checklists, inspeções, auditorias e verificações em múltiplos domínios (Segurança, Qualidade, Saúde, Ambiental, Manutenção, Auditoria).
 
 ---
 
-## ✨ Funcionalidades
-
-### Modo Offline-First
-- ✅ Criação e edição de inspeções sem internet
-- ✅ Armazenamento local via IndexedDB (Dexie)
-- ✅ Sincronização automática quando online
-- ✅ Resolução inteligente de conflitos
-- ✅ Fila de sincronização com retry exponencial
-
-### Gestão de Inspeções
-- 📋 Inspeções ambientais, de segurança e qualidade
-- 📸 Upload de fotos (base64 offline)
-- ✅ Respostas a perguntas de checklist
-- 📊 Status tracking (em andamento, concluída, cancelada)
-
-### Listas de Verificação (LV)
-- 📝 Criação e preenchimento de LVs personalizadas
-- ⭐ Sistema de avaliação por critérios
-- 📷 Fotos de evidência
-- 📈 Metas e indicadores
-
-### Gestão de Resíduos
-- 🗑️ Registro de resíduos e destinação
-- 🏢 Empresas contratadas
-- 👷 Encarregados e responsáveis
-
-### Relatórios
-- 📊 Dashboard com estatísticas
-- 📄 Exportação de relatórios (PDF)
-- 📱 Compartilhamento via WhatsApp
-
----
-
-## 🧪 Testes
-
-### Status Atual
-- **Cobertura:** ~80%
-- **Testes:** 235 testes passando
-- **Arquivos de teste:** 13
-- **Falhas:** 0
-
-### Executar Testes
+## 🚀 Quick Start
 
 ```bash
-# Watch mode (desenvolvimento)
-pnpm test
-
-# Interface gráfica
-pnpm test:ui
-
-# Executar todos os testes (CI)
-pnpm test:run
-
-# Gerar relatório de cobertura
-pnpm test:coverage
-
-# Type checking
-pnpm type-check
-```
-
-### Estrutura de Testes
-
-```
-src/
-├── lib/__tests__/
-│   └── supabase.test.ts (11 testes)
-├── lib/offline/entities/managers/__tests__/
-│   ├── TermoManager.test.ts (23 testes)
-│   ├── LVManager.test.ts (28 testes)
-│   ├── InspecaoManager.test.ts (18 testes)
-│   ├── EncarregadoManager.test.ts (12 testes)
-│   └── AtividadeRotinaManager.test.ts (10 testes)
-└── lib/offline/sync/__tests__/
-    ├── ConflictResolver.test.ts (93 testes)
-    ├── SyncQueue.test.ts (17 testes)
-    └── syncers/__tests__/
-        ├── TermoSync.test.ts (14 testes)
-        ├── LVSync.test.ts (7 testes)
-        ├── InspecaoSync.test.ts (3 testes)
-        ├── AtividadeRotinaSync.test.ts (3 testes)
-        └── EncarregadoSync.test.ts (3 testes)
-```
-
----
-
-## 🚀 Tecnologias
-
-### Frontend
-- **React 18.3** - UI library
-- **TypeScript 5.7** - Type safety
-- **Vite 7.0** - Build tool
-- **TailwindCSS 3.4** - Styling
-- **Dexie 4.0** - IndexedDB wrapper
-- **Zustand 5.0** - State management
-- **TanStack Query 5.8** - Server state caching
-- **Vitest 4.0** - Testing framework
-
-### Backend
-- **Supabase** - PostgreSQL + Auth + Storage
-- **Express** - API server
-- **Puppeteer** - PDF generation
-
-### DevOps
-- **GitHub Actions** - CI/CD
-- **Vercel** - Frontend deployment
-- **Codecov** - Coverage monitoring
-
----
-
-## 📦 Instalação
-
-### Pré-requisitos
-- Node.js >= 18.0.0
-- pnpm >= 8.0.0
-- Conta Supabase configurada
-
-### Setup Local
-
-```bash
-# Clone o repositório
-git clone https://github.com/[seu-usuario]/ecofield.git
-cd ecofield/frontend
-
-# Instale dependências
+# Instalar dependências
 pnpm install
 
-# Configure variáveis de ambiente
+# Configurar variáveis de ambiente
 cp .env.example .env
-# Edite .env com suas credenciais do Supabase
+# Editar .env com suas credenciais Supabase
 
-# Execute em desenvolvimento
+# Iniciar desenvolvimento
 pnpm dev
 
-# Build para produção
+# Build de produção
 pnpm build
-
-# Preview do build
-pnpm preview
 ```
+
+---
+
+## 📋 Índice
+
+- [Visão Geral](#visao-geral)
+- [Tecnologias](#tecnologias)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Funcionalidades](#funcionalidades)
+- [Scripts Disponíveis](#scripts-disponiveis)
+- [Configuração](#configuracao)
+- [Documentação](#documentacao)
+
+---
+
+## 🎯 Visão Geral {#visao-geral}
+
+**FieldManager v2.0** é uma plataforma **multi-domínio / multi-tenant** para gestão de conformidade e execuções de checklists em campo.
+
+### Arquitetura
+
+- **Multi-Domínio**: Suporta 6 domínios diferentes (Ambiental, Segurança, Qualidade, Saúde, Manutenção, Auditoria)
+- **Multi-Tenant**: Isolamento de dados por cliente via RLS (Row Level Security)
+- **Configurável**: Templates de módulos reutilizáveis e perguntas dinâmicas
+- **Escalável**: Adicionar novo domínio não requer refatoração
+
+### Diferencial
+
+Este é um **projeto completamente novo**, separado do EcoField (sistema anterior). O código legado está isolado em `src/_legacy/` apenas para referência.
+
+---
+
+## 🛠️ Tecnologias {#tecnologias}
+
+### Core
+
+- **React 18.3.1** - Interface de usuário
+- **TypeScript 5.7.3** - Tipagem estática
+- **Vite 7.0.0** - Build tool e dev server
+- **TailwindCSS 3.4.17** - Estilização
+
+### Estado e Dados
+
+- **Zustand 5.0.6** - State management
+- **TanStack Query 5.81.2** - Server state caching
+- **Supabase JS 2.50.2** - Backend e autenticação
+
+### Funcionalidades
+
+- **Recharts 3.0.2** - Gráficos e visualizações
+- **jsPDF 3.0.3** - Geração de relatórios PDF
+- **jspdf-autotable 5.0.2** - Tabelas em PDF
+- **Lucide React** - Ícones modernos
+
+### PWA e Offline
+
+- **Dexie 4.0.11** - IndexedDB para offline
+- **vite-plugin-pwa** - Service workers
+
+---
+
+## 📁 Estrutura do Projeto {#estrutura-do-projeto}
+
+```bash
+frontend/
+├── src/
+│   ├── components/           # Componentes React
+│   │   ├── common/          # Componentes compartilhados
+│   │   │   ├── DashboardEstatisticas.tsx  # Dashboard com gráficos
+│   │   │   ├── DominioSelector.tsx        # Seletor de domínios
+│   │   │   ├── DynamicNavigation.tsx      # Navegação dinâmica
+│   │   │   └── FormularioDinamico.tsx     # Execução de checklists
+│   │   ├── AdminDashboard.tsx    # Dashboard administrativo
+│   │   ├── TecnicoDashboard.tsx  # Dashboard do técnico
+│   │   └── LoginSimple.tsx       # Autenticação
+│   │
+│   ├── lib/                 # APIs e utilitários
+│   │   ├── dominiosAPI.ts          # API de domínios
+│   │   ├── modulosAPI.ts           # API de módulos
+│   │   ├── execucoesAPI.ts         # API de execuções
+│   │   ├── fotosExecucoesAPI.ts    # Upload de fotos (Supabase Storage)
+│   │   ├── pdfExecucoesAPI.ts      # Geração de PDFs
+│   │   ├── authAPI.ts              # Autenticação
+│   │   └── usuariosAPI.ts          # Gestão de usuários
+│   │
+│   ├── hooks/               # React hooks customizados
+│   │   ├── useMenuDinamico.ts      # Menu por domínio
+│   │   ├── useDashboardStats.ts    # Estatísticas
+│   │   └── useAuth.ts              # Autenticação
+│   │
+│   ├── contexts/            # Contextos React
+│   │   └── DominioContext.tsx      # Contexto de domínio ativo
+│   │
+│   ├── types/               # Tipos TypeScript
+│   │   ├── dominio.ts              # Tipos multi-domínio
+│   │   └── entities.ts             # Entidades do sistema
+│   │
+│   ├── utils/               # Utilitários
+│   └── _legacy/             # ⚠️ Código antigo (EcoField) - NÃO USAR
+│
+├── scripts/                 # Scripts Node.js
+│   ├── executar-seed-modulos.js    # Popular módulos no banco
+│   └── setup-storage-bucket.js     # Configurar Supabase Storage
+│
+├── public/                  # Assets estáticos
+├── docs/                    # Documentação (na raiz do projeto)
+└── sql/                     # Migrations e seeds SQL (na raiz do projeto)
+```
+
+---
+
+## ✨ Funcionalidades {#funcionalidades}
+
+### 1. Dashboard de Estatísticas 📊
+
+- 4 KPIs em tempo real (Total, Taxa Conformidade, NC, Mês)
+- Gráfico de Pizza (distribuição C/NC/NA)
+- Gráfico de Barras (top 5 módulos)
+- Gráfico de Linha (evolução 7 dias)
+- Responsivo (mobile/tablet/desktop)
+
+**Docs**: `/docs/DASHBOARD_ESTATISTICAS.md`
+
+### 2. Sistema de Fotos 📸
+
+- Captura via câmera do dispositivo
+- Compressão automática (1920px @ 80%)
+- Upload direto para Supabase Storage
+- Preview instantâneo
+- Múltiplas fotos por pergunta
+- Galeria no modal de detalhes
+
+**Docs**: `/docs/SISTEMA_FOTOS.md`
+
+### 3. Geração de PDF 📄
+
+- Relatórios profissionais (A4)
+- Cabeçalho e rodapé customizáveis
+- Tabela de respostas com cores dinâmicas
+- Estatísticas de conformidade
+- **Fotos incluídas automaticamente**
+- Download com 1 clique
+
+**Docs**: `/docs/SISTEMA_PDF.md`
+
+### 4. Multi-Domínio 🌐
+
+- 6 domínios configuráveis
+- Navegação dinâmica por domínio
+- Templates de módulos reutilizáveis
+- Perguntas dinâmicas (boolean, text, numeric, date, multiple_choice)
+
+**Docs**: `/docs/ESTRATEGIA_GENERALIZACAO_MULTIDOMINIO.md`
+
+### 5. Execução de Checklists ✅
+
+- FormularioDinamico genérico
+- Progresso visual
+- Validação em tempo real
+- Salvar rascunho
+- Preenchimento de teste (DEV)
+
+---
+
+## 📜 Scripts Disponíveis {#scripts-disponiveis}
+
+### Desenvolvimento
+
+```bash
+pnpm dev          # Servidor de desenvolvimento (porta 3000)
+pnpm build        # Build de produção
+pnpm preview      # Preview do build
+```
+
+### Qualidade de Código
+
+```bash
+pnpm lint         # Executar ESLint
+pnpm lint:fix     # Corrigir problemas automaticamente
+pnpm type-check   # Verificar tipos TypeScript
+```
+
+### Banco de Dados
+
+```bash
+pnpm setup:storage    # Configurar bucket de fotos no Supabase
+node scripts/executar-seed-modulos.js  # Popular módulos
+```
+
+### Testes
+
+```bash
+pnpm test         # Executar testes (Vitest)
+pnpm test:ui      # Interface gráfica de testes
+pnpm test:run     # Executar testes sem watch
+pnpm test:coverage # Cobertura de testes
+```
+
+### Limpeza
+
+```bash
+pnpm clean        # Remover node_modules e build
+pnpm fresh        # Instalação limpa
+```
+
+---
+
+## ⚙️ Configuração {#configuracao}
 
 ### Variáveis de Ambiente
 
+Criar arquivo `.env` na raiz do projeto:
+
 ```env
+# Supabase
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key
-VITE_APP_NAME="EcoField - Sistema de Gestão Ambiental"
-VITE_APP_VERSION="1.4.0"
+VITE_SUPABASE_SERVICE_KEY=your_service_key  # Apenas para scripts
+
+# Aplicação
+VITE_APP_NAME="FieldManager - Sistema Multi-Domínio"
+VITE_APP_VERSION="2.0.0"
 VITE_APP_ENV=development
+```
+
+### Configurar Supabase Storage
+
+Para usar o sistema de fotos:
+
+```bash
+pnpm setup:storage
+```
+
+Depois, configurar políticas RLS no Supabase Dashboard:
+
+1. Storage → Policies
+2. Adicionar política de leitura pública (SELECT)
+3. Adicionar política de upload autenticado (INSERT)
+
+Veja: `/docs/SISTEMA_FOTOS.md` (seção "Configuração")
+
+### Popular Banco de Dados
+
+Executar seeds SQL no Supabase SQL Editor:
+
+1. `/sql/seeds/01_dominios.sql` - Criar 6 domínios
+2. `/sql/seeds/02_modulos_multidominio.sql` - Criar módulos templates
+
+Ou usar script Node.js:
+
+```bash
+node scripts/executar-seed-modulos.js
 ```
 
 ---
 
-## 📚 Documentação
+## 📚 Documentação {#documentacao}
 
-### 🎯 Início Rápido
-- 📑 **[DOCS_INDEX.md](./DOCS_INDEX.md)** - Índice completo de toda documentação
-- 🧪 **[docs/05-testes/](./docs/05-testes/)** - Documentação de testes
-- 🎉 **[docs/05-testes/RESUMO_FINAL_COMPLETO.md](./docs/05-testes/RESUMO_FINAL_COMPLETO.md)** - Status atual completo
+### Documentação Técnica (em `/docs/`)
 
-### Documentação de Testes
-- [TESTING_ROADMAP.md](./docs/05-testes/guides/TESTING_ROADMAP.md) - Roadmap de testes
-- [TESTING_JOURNEY.md](./docs/05-testes/guides/TESTING_JOURNEY.md) - Jornada completa
-- [SPRINT_FINAL_REPORT.md](./docs/05-testes/sprints/SPRINT_FINAL_REPORT.md) - Relatório final
-- [SPRINT6_E2E_GUIDE.md](./docs/05-testes/guides/SPRINT6_E2E_GUIDE.md) - Guia de testes E2E
+- **ESTRATEGIA_GENERALIZACAO_MULTIDOMINIO.md** - Arquitetura multi-domínio
+- **DASHBOARD_ESTATISTICAS.md** - Sistema de estatísticas e gráficos
+- **SISTEMA_FOTOS.md** - Upload e gerenciamento de fotos
+- **SISTEMA_PDF.md** - Geração de relatórios PDF
+- **RESUMO_IMPLEMENTACOES_19NOV2025.md** - Resumo das implementações
 
-### CI/CD
-- [.github/GITHUB_ACTIONS_SETUP.md](./.github/GITHUB_ACTIONS_SETUP.md) - Setup do CI/CD
-- [.github/workflows/](./.github/workflows/) - Workflows automatizados
+### Recursos
 
-### Arquitetura
-- Offline-first com IndexedDB
-- Sincronização com fila de retry
-- Resolução automática de conflitos
-- PWA com Service Worker
+- **Recharts Docs**: <https://recharts.org/>
+- **jsPDF Docs**: <https://artskydj.github.io/jsPDF/docs/>
+- **Supabase Docs**: <https://supabase.com/docs>
+- **TailwindCSS**: <https://tailwindcss.com/>
+- **React**: <https://react.dev/>
 
 ---
 
-## 🔄 CI/CD
+## 🧪 Como Testar
 
-### Workflows do GitHub Actions
+### 1. Login
 
-#### Tests (`tests.yml`)
-- Executado em: push e pull requests
-- Node.js: 18.x e 20.x
-- Etapas:
-  - Type checking
-  - Execução de testes
-  - Geração de cobertura
-  - Upload para Codecov
-  - Comentário de cobertura em PRs
+- Admin: `admin@fieldmanager.dev` / `admin123`
+- Técnico: `tecnico@fieldmanager.dev` / `tecnico123`
 
-#### Build (`build.yml`)
-- Valida que build de produção funciona
-- Upload de artifacts
-- Verificação de tamanho do bundle
+### 2. Criar Execução
 
-#### Lint (`lint.yml`)
-- ESLint em todos os arquivos
-- Fail on warnings
+1. Login como técnico
+2. Selecionar domínio (ex: Segurança)
+3. Clicar em módulo (ex: NR-35)
+4. Preencher checklist (ou usar "🧪 Preencher com Dados de Teste")
+5. Adicionar fotos (opcional)
+6. Finalizar execução
 
-### Quality Gates
-- ✅ Cobertura mínima: 70%
-- ✅ Todos os testes devem passar
-- ✅ Build deve compilar sem erros
-- ✅ Sem erros de lint
+### 3. Ver Dashboard
+
+- Ver KPIs e gráficos atualizados em tempo real
+
+### 4. Gerar PDF
+
+1. Lista de execuções → Ver Detalhes
+2. Clicar "Baixar PDF"
+3. PDF baixa automaticamente com fotos incluídas
 
 ---
 
-## 🤝 Contribuindo
+## 🏗️ Desenvolvimento
 
-### Workflow de Desenvolvimento
+### Adicionar Novo Domínio
 
-1. Crie uma branch a partir de `develop`
-2. Faça suas alterações
-3. Execute testes: `pnpm test:run`
-4. Execute type checking: `pnpm type-check`
-5. Execute lint: `pnpm lint`
-6. Crie um Pull Request
-7. Aguarde aprovação dos checks automáticos
+1. Inserir no banco (tabela `dominios`):
 
-### Padrões de Código
-- TypeScript strict mode
-- Functional components com hooks
-- TailwindCSS para styling
-- Testes para novas funcionalidades
+```sql
+INSERT INTO dominios (codigo, nome, descricao, icone, cor_primaria)
+VALUES ('novo-dominio', 'Novo Domínio', 'Descrição', 'Icon', '#10b981');
+```
+
+1. Criar módulo template:
+
+```sql
+INSERT INTO modulos_sistema (dominio_id, codigo, nome, template)
+VALUES ('<dominio-id>', 'codigo-modulo', 'Nome Módulo', true);
+```
+
+1. Sistema detecta automaticamente e adiciona ao menu!
+
+### Adicionar Novo Tipo de Pergunta
+
+Editar `FormularioDinamico.tsx` → função `renderCampo()`:
+
+```typescript
+case 'seu_novo_tipo':
+  return (
+    <input
+      type="..."
+      onChange={(e) => setResposta(pergunta, undefined, e.target.value)}
+    />
+  );
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Fotos não aparecem no PDF
+
+**Solução**: Configurar CORS no Supabase Storage ou executar `pnpm setup:storage`
+
+### Erro ao buildar
+
+**Solução**: `pnpm clean && pnpm install`
+
+### TypeScript errors
+
+**Solução**: `pnpm type-check` para verificar erros
+
+### Imports de `_legacy/` quebrando
+
+**Solução**: Código em `_legacy/` é antigo (EcoField). Use apenas código da raiz `src/`
+
+---
+
+## 📝 Convenções de Código
+
+### Naming
+
+- Componentes: `PascalCase.tsx`
+- Hooks: `useCamelCase.ts`
+- APIs: `camelCaseAPI.ts`
+- Utils: `camelCase.ts`
+
+### Estrutura de Componentes
+
+```typescript
+// 1. Imports
+import { useState } from 'react';
+
+// 2. Tipos/Interfaces
+interface Props {
+  userId: string;
+}
+
+// 3. Componente
+export default function Component({ userId }: Props) {
+  // 4. Hooks
+  const [state, setState] = useState();
+
+  // 5. Funções
+  const handleClick = () => {};
+
+  // 6. Render
+  return <div>...</div>;
+}
+```
+
+---
+
+## 🚀 Deploy
+
+### Frontend (Vercel)
+
+```bash
+pnpm build
+# Deploy pasta dist/
+```
+
+### Configuração Vercel
+
+- Build Command: `pnpm build`
+- Output Directory: `dist`
+- Install Command: `pnpm install`
 
 ---
 
 ## 📄 Licença
 
-Este projeto é privado e proprietário.
+Projeto privado - Todos os direitos reservados
 
 ---
 
-## 👥 Time
+## 👥 Autores
 
-Desenvolvido com ❤️ por [Seu Nome/Empresa]
+- **Uederson Ferreira** - Desenvolvimento FullStack
 
 ---
 
-## 📞 Suporte
+## 📅 Changelog
 
-Para dúvidas ou problemas:
-- 📧 Email: suporte@ecofield.com
-- 🐛 Issues: [GitHub Issues](https://github.com/[seu-usuario]/ecofield/issues)
+### v2.0.0 (19/11/2025)
+
+- ✅ Arquitetura multi-domínio completa
+- ✅ Dashboard de estatísticas com gráficos
+- ✅ Sistema de upload de fotos
+- ✅ Geração de PDF com fotos
+- ✅ 6 módulos templates criados
+- ✅ Código legado isolado em `_legacy/`
+
+---
+
+**Status**: ✅ Em Produção
+**Versão Atual**: 2.0.0
+**Última Atualização**: 19/11/2025

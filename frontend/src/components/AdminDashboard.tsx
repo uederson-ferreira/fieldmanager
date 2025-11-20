@@ -6,20 +6,8 @@
 import React, { useState } from 'react';
 import {
   Menu, X, LogOut, User, CheckCircle2, AlertTriangle,
-  TrendingUp, Clock, Settings
+  TrendingUp, Clock, Settings, Users, FileCheck, BarChart3
 } from 'lucide-react';
-import CrudUsuarios from './admin/CrudUsuarios';
-import AdminTermos from './admin/AdminTermos';
-import AdminLVs from './admin/AdminLVs';
-import DashboardGerencial from './admin/DashboardGerencial';
-import CrudAreas from './admin/CrudAreas';
-import CrudCategorias from './admin/CrudCategorias';
-import CrudPerfis from './admin/CrudPerfis';
-import CrudConfiguracoes from './admin/CrudConfiguracoes';
-import CrudBackup from './admin/Backup';
-import AdminRotinas from './admin/AdminRotinas';
-import CrudMetas from './admin/CrudMetas';
-import DetalhamentoPorUsuario from './admin/DetalhamentoPorUsuario';
 import DominioSelector from './common/DominioSelector';
 import { NavigationSection } from './common/DynamicNavigation';
 import { useMenuAdmin, useMenuItem } from '../hooks/useMenuDinamico';
@@ -40,7 +28,7 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, loginInfo }) => {
   // Hooks do sistema multi-domínio
   const menuSections = useMenuAdmin();
-  const { dominioAtual } = useDominio();
+  const { dominioAtual, modulosDisponiveis } = useDominio();
 
   // State local
   const [activeSection, setActiveSection] = useState<string>('dashboard');
@@ -92,33 +80,169 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, loginIn
   // ===================================================================
 
   const renderModuloContent = (moduleId: string) => {
-    // TODO: Implementar componente genérico para execução de módulos
-    // Por enquanto, retorna placeholder
-    return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <div className="text-emerald-400 mb-4">
-          <Settings className="h-16 w-16 mx-auto" />
+    const modulo = modulosDisponiveis.find(m => m.id === moduleId);
+
+    if (!modulo) {
+      return (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+          <p className="text-red-600">Módulo não encontrado</p>
+          <button
+            onClick={() => setActiveSection('dashboard')}
+            className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+          >
+            Voltar ao Dashboard
+          </button>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {currentMenuItem?.label || 'Módulo'}
-        </h3>
-        <p className="text-gray-600 mb-2">
-          Domínio: <span className="font-medium" style={{ color: dominioAtual?.cor_primaria }}>
-            {dominioAtual?.nome}
-          </span>
-        </p>
-        <p className="text-gray-600 mb-4">
-          Módulo ID: <code className="bg-gray-100 px-2 py-1 rounded text-xs">{moduleId}</code>
-        </p>
-        <p className="text-sm text-gray-500 mb-4">
-          O formulário dinâmico para execução deste módulo será implementado na próxima etapa.
-        </p>
-        <button
-          onClick={() => setActiveSection('dashboard')}
-          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-        >
-          Voltar ao Dashboard
-        </button>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* Header do Módulo */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-lg flex items-center justify-center" style={{
+                backgroundColor: `${dominioAtual?.cor_primaria}20`,
+                color: dominioAtual?.cor_primaria
+              }}>
+                <Settings className="h-6 w-6" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">{modulo.nome}</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  <span className="font-medium" style={{ color: dominioAtual?.cor_primaria }}>
+                    {dominioAtual?.icone} {dominioAtual?.nome}
+                  </span>
+                  {' • '}
+                  <span className="capitalize">{modulo.tipo_modulo}</span>
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {modulo.template && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                  📋 Template
+                </span>
+              )}
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                modulo.ativo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+              }`}>
+                {modulo.ativo ? '✅ Ativo' : '⭕ Inativo'}
+              </span>
+            </div>
+          </div>
+
+          {modulo.descricao && (
+            <p className="text-gray-700 mb-4">{modulo.descricao}</p>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-sm font-medium text-gray-600 mb-1">Código do Módulo</p>
+              <p className="text-lg font-semibold text-gray-900">{modulo.codigo}</p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-sm font-medium text-gray-600 mb-1">Tipo</p>
+              <p className="text-lg font-semibold text-gray-900 capitalize">{modulo.tipo_modulo}</p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-sm font-medium text-gray-600 mb-1">Ordem de Exibição</p>
+              <p className="text-lg font-semibold text-gray-900">{modulo.ordem || 'N/A'}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Configurações do Módulo */}
+        {modulo.configuracao && Object.keys(modulo.configuracao).length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">⚙️ Configurações</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.entries(modulo.configuracao).map(([key, value]) => (
+                <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span className="text-sm font-medium text-gray-700 capitalize">
+                    {key.replace(/_/g, ' ')}
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {typeof value === 'boolean' ? (value ? '✅' : '❌') : String(value)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Status de Desenvolvimento */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex items-start gap-4">
+            <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-2xl">🚧</span>
+            </div>
+            <div>
+              <h4 className="font-semibold text-blue-900 mb-2">Em Desenvolvimento</h4>
+              <p className="text-sm text-blue-800 mb-3">
+                O formulário dinâmico de execução para este módulo está sendo implementado.
+                Em breve você poderá:
+              </p>
+              <ul className="space-y-1 text-sm text-blue-800">
+                <li>✓ Executar checklists e inspeções</li>
+                <li>✓ Responder perguntas dinamicamente</li>
+                <li>✓ Anexar fotos e evidências</li>
+                <li>✓ Gerar relatórios em PDF</li>
+                <li>✓ Acompanhar histórico de execuções</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Detalhes Técnicos (Admin apenas) */}
+        <details className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <summary className="p-4 cursor-pointer font-medium text-gray-900 hover:bg-gray-50">
+            🔧 Detalhes Técnicos (Admin)
+          </summary>
+          <div className="p-4 border-t border-gray-200 space-y-2 text-sm">
+            <div className="grid grid-cols-2 gap-2">
+              <span className="font-medium text-gray-600">ID do Módulo:</span>
+              <code className="bg-gray-100 px-2 py-1 rounded text-xs">{modulo.id}</code>
+
+              <span className="font-medium text-gray-600">ID do Domínio:</span>
+              <code className="bg-gray-100 px-2 py-1 rounded text-xs">{modulo.dominio_id}</code>
+
+              {modulo.tenant_id && (
+                <>
+                  <span className="font-medium text-gray-600">ID do Tenant:</span>
+                  <code className="bg-gray-100 px-2 py-1 rounded text-xs">{modulo.tenant_id}</code>
+                </>
+              )}
+
+              <span className="font-medium text-gray-600">Criado em:</span>
+              <span className="text-gray-900">
+                {modulo.created_at ? new Date(modulo.created_at).toLocaleString('pt-BR') : 'N/A'}
+              </span>
+
+              <span className="font-medium text-gray-600">Atualizado em:</span>
+              <span className="text-gray-900">
+                {modulo.updated_at ? new Date(modulo.updated_at).toLocaleString('pt-BR') : 'N/A'}
+              </span>
+            </div>
+          </div>
+        </details>
+
+        {/* Ações */}
+        <div className="flex gap-4">
+          <button
+            onClick={() => setActiveSection('dashboard')}
+            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+          >
+            ← Voltar ao Dashboard
+          </button>
+          <button
+            onClick={() => alert('Funcionalidade de edição será implementada em breve!')}
+            className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
+          >
+            ✏️ Editar Módulo
+          </button>
+        </div>
       </div>
     );
   };
@@ -137,13 +261,38 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, loginIn
     // Rotas estáticas
     switch (activeSection) {
       case 'usuarios':
-        return <CrudUsuarios />;
-
       case 'areas':
-        return <CrudAreas />;
-
       case 'perfis':
-        return <CrudPerfis />;
+      case 'relatorios':
+      case 'configuracoes':
+      case 'backup':
+      case 'categorias':
+      case 'rotinas':
+      case 'metas':
+      case 'termos':
+      case 'lvs':
+      case 'detalhamento':
+        // Componentes legados - mostrar mensagem de desenvolvimento
+        return (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <div className="text-gray-400 mb-4">
+              <Settings className="h-16 w-16 mx-auto" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {currentMenuItem?.label || 'Seção em Desenvolvimento'}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Esta funcionalidade está sendo migrada para a arquitetura v2.0 (Multi-Domínio).
+              Em breve estará disponível com novas melhorias.
+            </p>
+            <button
+              onClick={() => setActiveSection('dashboard')}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+            >
+              Voltar ao Dashboard
+            </button>
+          </div>
+        );
 
       case 'dashboard':
         return (
@@ -279,33 +428,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, loginIn
             </div>
           </div>
         );
-
-      case 'relatorios':
-        return <DashboardGerencial onNavigateToDetalhamento={() => setActiveSection('detalhamento')} />;
-
-      case 'configuracoes':
-        return <CrudConfiguracoes />;
-
-      case 'backup':
-        return <CrudBackup />;
-
-      case 'categorias':
-        return <CrudCategorias />;
-
-      case 'rotinas':
-        return <AdminRotinas />;
-
-      case 'metas':
-        return <CrudMetas user={user} />;
-
-      case 'termos':
-        return <AdminTermos />;
-
-      case 'lvs':
-        return <AdminLVs />;
-
-      case 'detalhamento':
-        return <DetalhamentoPorUsuario onBack={() => setActiveSection('relatorios')} />;
 
       default:
         return (

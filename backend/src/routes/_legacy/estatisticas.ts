@@ -4,41 +4,26 @@
 // ===================================================================
 
 import express from 'express';
-import { supabase, supabaseAdmin } from '../supabase';
+import { supabase, supabaseAdmin } from '../../supabase';
+import { authenticateUser } from '../../middleware/auth';
 import type { Request, Response } from 'express';
 
 const router = express.Router();
 
-// Middleware para autenticação
-const authenticateUser = async (req: Request, res: Response, next: Function) => {
-  try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) {
-      return res.status(401).json({ error: 'Token não fornecido' });
-    }
-
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) {
-      return res.status(401).json({ error: 'Token inválido' });
-    }
-
-    req.user = user;
-    next();
-  } catch (error) {
-    console.error('❌ [ESTATÍSTICAS API] Erro na autenticação:', error);
-    res.status(401).json({ error: 'Erro na autenticação' });
-  }
-};
-
 // Buscar estatísticas do dashboard
-router.get('/dashboard', authenticateUser, async (req: Request, res: Response) => {
+router.get('/dashboard', authenticateUser, async (req: any, res: Response) => {
   try {
-    const user = req.user;
+    const user = (req as any).user;
 
     console.log('🔍 [ESTATÍSTICAS API] Buscando estatísticas do dashboard');
 
+    // Usar supabaseAdmin para bypass RLS
+    if (!supabaseAdmin) {
+      return res.status(500).json({ error: 'Erro de configuração do servidor' });
+    }
+
     // Buscar LVs do usuário
-    const { data: lvs, error: errorLVs } = await supabase
+    const { data: lvs, error: errorLVs } = await supabaseAdmin
       .from('lvs')
       .select('*')
       .eq('auth_user_id', user?.id || '');
@@ -49,10 +34,10 @@ router.get('/dashboard', authenticateUser, async (req: Request, res: Response) =
     }
 
     // Buscar termos do usuário
-    const { data: termos, error: errorTermos } = await supabase
+    const { data: termos, error: errorTermos } = await supabaseAdmin
       .from('termos_ambientais')
       .select('*')
-      .eq('auth_user_id', user?.id || '');
+      .or(`auth_user_id.eq.${user?.id || ''},emitido_por_usuario_id.eq.${user?.id || ''}`);
 
     if (errorTermos) {
       console.error('❌ [ESTATÍSTICAS API] Erro ao buscar termos:', errorTermos);
@@ -60,10 +45,10 @@ router.get('/dashboard', authenticateUser, async (req: Request, res: Response) =
     }
 
     // Buscar rotinas do usuário
-    const { data: rotinas, error: errorRotinas } = await supabase
+    const { data: rotinas, error: errorRotinas } = await supabaseAdmin
       .from('atividades_rotina')
       .select('*')
-      .eq('auth_user_id', user?.id || '');
+      .or(`auth_user_id.eq.${user?.id || ''},tma_responsavel_id.eq.${user?.id || ''}`);
 
     if (errorRotinas) {
       console.error('❌ [ESTATÍSTICAS API] Erro ao buscar rotinas:', errorRotinas);
@@ -153,9 +138,9 @@ router.get('/dashboard', authenticateUser, async (req: Request, res: Response) =
 });
 
 // Buscar estatísticas específicas de LVs
-router.get('/lvs', authenticateUser, async (req: Request, res: Response) => {
+router.get('/lvs', authenticateUser, async (req: any, res: Response) => {
   try {
-    const user = req.user;
+    const user = (req as any).user;
     const { tipo_lv } = req.query;
 
     console.log('🔍 [ESTATÍSTICAS API] Buscando estatísticas de LVs');
@@ -224,17 +209,21 @@ router.get('/lvs', authenticateUser, async (req: Request, res: Response) => {
 });
 
 // Buscar estatísticas específicas de Termos
-router.get('/termos', authenticateUser, async (req: Request, res: Response) => {
+router.get('/termos', authenticateUser, async (req: any, res: Response) => {
   try {
-    const user = req.user;
+    const user = (req as any).user;
     const { status, tipo_termo } = req.query;
 
     console.log('🔍 [ESTATÍSTICAS API] Buscando estatísticas de Termos');
 
-    let query = supabase
+    if (!supabaseAdmin) {
+      return res.status(500).json({ error: 'Erro de configuração do servidor' });
+    }
+
+    let query = supabaseAdmin
       .from('termos_ambientais')
       .select('*')
-      .eq('auth_user_id', user?.id || '');
+      .or(`auth_user_id.eq.${user?.id || ''},emitido_por_usuario_id.eq.${user?.id || ''}`);
 
     if (status) {
       query = query.eq('status', status);
@@ -270,17 +259,21 @@ router.get('/termos', authenticateUser, async (req: Request, res: Response) => {
 });
 
 // Buscar estatísticas específicas de Rotinas
-router.get('/rotinas', authenticateUser, async (req: Request, res: Response) => {
+router.get('/rotinas', authenticateUser, async (req: any, res: Response) => {
   try {
-    const user = req.user;
+    const user = (req as any).user;
     const { data_inicio, data_fim } = req.query;
 
     console.log('🔍 [ESTATÍSTICAS API] Buscando estatísticas de Rotinas');
 
-    let query = supabase
+    if (!supabaseAdmin) {
+      return res.status(500).json({ error: 'Erro de configuração do servidor' });
+    }
+
+    let query = supabaseAdmin
       .from('atividades_rotina')
       .select('*')
-      .eq('auth_user_id', user?.id || '');
+      .or(`auth_user_id.eq.${user?.id || ''},tma_responsavel_id.eq.${user?.id || ''}`);
 
     if (data_inicio) {
       query = query.gte('data_atividade', data_inicio);
@@ -318,10 +311,10 @@ router.get('/rotinas', authenticateUser, async (req: Request, res: Response) => 
 });
 
 // Buscar estatísticas por período
-router.get('/periodo', authenticateUser, async (req: Request, res: Response) => {
+router.get('/periodo', authenticateUser, async (req: any, res: Response) => {
   try {
     const { inicio, fim } = req.query;
-    const user = req.user;
+    const user = (req as any).user;
 
     console.log('🔍 [ESTATÍSTICAS API] Buscando estatísticas por período:', { inicio, fim });
 
@@ -388,9 +381,9 @@ router.get('/periodo', authenticateUser, async (req: Request, res: Response) => 
 // ===================================================================
 
 // Evolução mensal de atividades (últimos 6 meses)
-router.get('/evolucao-mensal', authenticateUser, async (req: Request, res: Response) => {
+router.get('/evolucao-mensal', authenticateUser, async (req: any, res: Response) => {
   try {
-    const user = req.user;
+    const user = (req as any).user;
     console.log('📊 [ESTATÍSTICAS API] Buscando evolução mensal');
 
     if (!supabaseAdmin) {
@@ -490,9 +483,9 @@ router.get('/evolucao-mensal', authenticateUser, async (req: Request, res: Respo
 });
 
 // Conformidade por tipo de LV
-router.get('/conformidade-por-tipo', authenticateUser, async (req: Request, res: Response) => {
+router.get('/conformidade-por-tipo', authenticateUser, async (req: any, res: Response) => {
   try {
-    const user = req.user;
+    const user = (req as any).user;
     console.log('📊 [ESTATÍSTICAS API] Buscando conformidade por tipo');
 
     if (!supabaseAdmin) {
@@ -554,9 +547,9 @@ router.get('/conformidade-por-tipo', authenticateUser, async (req: Request, res:
 });
 
 // Atividades recentes (últimas 10)
-router.get('/atividades-recentes', authenticateUser, async (req: Request, res: Response) => {
+router.get('/atividades-recentes', authenticateUser, async (req: any, res: Response) => {
   try {
-    const user = req.user;
+    const user = (req as any).user;
     console.log('📊 [ESTATÍSTICAS API] Buscando atividades recentes');
 
     if (!supabaseAdmin) {

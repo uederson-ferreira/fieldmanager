@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
+import multer from 'multer';
 
 const router = Router();
 
@@ -7,6 +8,25 @@ const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_KEY!
 );
+
+// Configuração do multer para upload de arquivos
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: MAX_FILE_SIZE,
+    fieldSize: 1 * 1024 * 1024 // 1MB para campos de texto
+  },
+  fileFilter: (req, file, cb) => {
+    if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      cb(new Error(`Tipo de arquivo não permitido: ${file.mimetype}`));
+      return;
+    }
+    cb(null, true);
+  }
+});
 
 // ================================================================
 // GET /api/execucoes
@@ -16,7 +36,14 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     const { tenantId, moduloId, usuarioId, status, limit = 50, offset = 0 } = req.query;
 
-    console.log('📋 [EXECUCOES] Buscando execuções');
+    console.log('📋 [EXECUCOES] Buscando execuções', {
+      tenantId,
+      moduloId,
+      usuarioId,
+      status,
+      limit,
+      offset
+    });
 
     let query = supabase
       .from('execucoes')
@@ -36,21 +63,79 @@ router.get('/', async (req: Request, res: Response) => {
     // Filtros opcionais
     if (tenantId) {
       query = query.eq('tenant_id', tenantId);
+      console.log(`🔍 [EXECUCOES] Filtro tenant_id: ${tenantId}`);
     }
 
     if (moduloId) {
       query = query.eq('modulo_id', moduloId);
+      console.log(`🔍 [EXECUCOES] Filtro modulo_id: ${moduloId}`);
     }
 
+    // Converter usuarioId (pode ser auth_user_id) para usuarios.id
+    let usuarioIdFinal: string | undefined = usuarioId as string | undefined;
     if (usuarioId) {
-      query = query.eq('usuario_id', usuarioId);
+      // Verificar se o usuarioId existe na tabela usuarios
+      const { data: usuarioExistente, error: usuarioError } = await supabase
+        .from('usuarios')
+        .select('id')
+        .eq('id', usuarioId)
+        .single();
+
+      // Se não encontrou, tentar buscar por auth_user_id
+      if (usuarioError || !usuarioExistente) {
+        console.log(`🔍 [EXECUCOES] usuarioId não encontrado em usuarios, tentando buscar por auth_user_id: ${usuarioId}`);
+        
+        const { data: usuarioPorAuth, error: authError } = await supabase
+          .from('usuarios')
+          .select('id')
+          .eq('auth_user_id', usuarioId)
+          .single();
+
+        if (authError || !usuarioPorAuth) {
+          console.log(`⚠️ [EXECUCOES] Usuário não encontrado nem por id nem por auth_user_id: ${usuarioId} - buscando sem filtro de usuário`);
+          usuarioIdFinal = undefined; // Não filtrar por usuário se não encontrar
+        } else {
+          usuarioIdFinal = usuarioPorAuth.id;
+          console.log(`✅ [EXECUCOES] Usuário encontrado por auth_user_id: ${usuarioId} -> usuarios.id: ${usuarioIdFinal}`);
+        }
+      } else {
+        console.log(`✅ [EXECUCOES] Usuário encontrado diretamente: ${usuarioId}`);
+      }
+    }
+
+    if (usuarioIdFinal) {
+      query = query.eq('usuario_id', usuarioIdFinal);
+      console.log(`🔍 [EXECUCOES] Filtro usuario_id: ${usuarioIdFinal}`);
     }
 
     if (status) {
       query = query.eq('status', status);
+      console.log(`🔍 [EXECUCOES] Filtro status: ${status}`);
     }
 
-    const { data, error, count } = await query;
+    // Fazer query para contar total (sem paginação)
+    let countQuery = supabase
+      .from('execucoes')
+      .select('*', { count: 'exact', head: true });
+
+    if (tenantId) {
+      countQuery = countQuery.eq('tenant_id', tenantId);
+    }
+    if (moduloId) {
+      countQuery = countQuery.eq('modulo_id', moduloId);
+    }
+    if (usuarioIdFinal) {
+      countQuery = countQuery.eq('usuario_id', usuarioIdFinal);
+    }
+    if (status) {
+      countQuery = countQuery.eq('status', status);
+    }
+
+    // Executar queries em paralelo
+    const [{ data, error }, { count, error: countError }] = await Promise.all([
+      query,
+      countQuery
+    ]);
 
     if (error) {
       console.error('❌ [EXECUCOES] Erro ao buscar:', error);
@@ -60,10 +145,15 @@ router.get('/', async (req: Request, res: Response) => {
       });
     }
 
-    console.log(`✅ [EXECUCOES] ${data.length} execuções encontradas (total: ${count})`);
+    if (countError) {
+      console.error('❌ [EXECUCOES] Erro ao contar:', countError);
+    }
+
+    const totalCount = count || 0;
+    console.log(`✅ [EXECUCOES] ${data.length} execuções encontradas (total no banco: ${totalCount})`);
     return res.json({
       data,
-      total: count,
+      total: totalCount,
       limit: Number(limit),
       offset: Number(offset)
     });
@@ -184,13 +274,47 @@ router.post('/', async (req: Request, res: Response) => {
 
     console.log(`📋 [EXECUCOES] Criando execução para módulo: ${modulo_id}`);
 
+    // Converter usuario_id (pode ser auth_user_id) para usuarios.id
+    let usuarioIdFinal = usuario_id;
+    
+    // Verificar se o usuario_id existe na tabela usuarios
+    const { data: usuarioExistente, error: usuarioError } = await supabase
+      .from('usuarios')
+      .select('id')
+      .eq('id', usuario_id)
+      .single();
+
+    // Se não encontrou, tentar buscar por auth_user_id
+    if (usuarioError || !usuarioExistente) {
+      console.log(`🔍 [EXECUCOES] usuario_id não encontrado em usuarios, tentando buscar por auth_user_id: ${usuario_id}`);
+      
+      const { data: usuarioPorAuth, error: authError } = await supabase
+        .from('usuarios')
+        .select('id')
+        .eq('auth_user_id', usuario_id)
+        .single();
+
+      if (authError || !usuarioPorAuth) {
+        console.error('❌ [EXECUCOES] Usuário não encontrado nem por id nem por auth_user_id:', usuario_id);
+        return res.status(400).json({
+          error: 'Usuário não encontrado no sistema',
+          details: `Nenhum usuário encontrado com id ou auth_user_id: ${usuario_id}`
+        });
+      }
+
+      usuarioIdFinal = usuarioPorAuth.id;
+      console.log(`✅ [EXECUCOES] Usuário encontrado por auth_user_id: ${usuario_id} -> usuarios.id: ${usuarioIdFinal}`);
+    } else {
+      console.log(`✅ [EXECUCOES] Usuário encontrado diretamente: ${usuario_id}`);
+    }
+
     // Criar execução
     const { data: execucao, error: execError } = await supabase
       .from('execucoes')
       .insert({
         tenant_id,
         modulo_id,
-        usuario_id,
+        usuario_id: usuarioIdFinal, // Usar o ID convertido
         status: dadosExecucao.status || 'concluido',
         ...dadosExecucao
       })
@@ -363,6 +487,244 @@ router.delete('/:id', async (req: Request, res: Response) => {
 
   } catch (error: any) {
     console.error('❌ [EXECUCOES] Erro inesperado:', error);
+    return res.status(500).json({
+      error: 'Erro interno do servidor',
+      details: error.message
+    });
+  }
+});
+
+// ================================================================
+// POST /api/execucoes/:id/fotos
+// Upload de fotos para uma execução (usa service role - bypass RLS)
+// ================================================================
+// @ts-ignore - Multer middleware type compatibility
+router.post('/:id/fotos', upload.array('fotos', 50), async (req: any, res: Response) => {
+  try {
+    const { id: execucaoId } = req.params;
+    const files = req.files || [];
+    const { perguntaId, perguntaCodigo, descricao } = req.body;
+
+    console.log(`📸 [EXECUCOES] Upload de ${files.length} fotos para execução: ${execucaoId}`);
+
+    // Verificar se a execução existe
+    const { data: execucao, error: execError } = await supabase
+      .from('execucoes')
+      .select('id')
+      .eq('id', execucaoId)
+      .single();
+
+    if (execError || !execucao) {
+      return res.status(404).json({ error: 'Execução não encontrada' });
+    }
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: 'Nenhuma foto enviada' });
+    }
+
+    const BUCKET_NAME = 'execucoes';
+    const fotosUploaded: any[] = [];
+
+    // Upload de cada arquivo
+    for (const file of files) {
+      try {
+        // Gerar nome único para o arquivo
+        const timestamp = Date.now();
+        const extensao = file.originalname.split('.').pop() || 'jpg';
+        const nomeArquivo = `${execucaoId}/${timestamp}_${perguntaCodigo || 'geral'}.${extensao}`;
+
+        // Upload para Supabase Storage (usando service role - bypass RLS)
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from(BUCKET_NAME)
+          .upload(nomeArquivo, file.buffer, {
+            contentType: file.mimetype,
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error(`❌ [EXECUCOES] Erro no upload de ${file.originalname}:`, uploadError);
+          continue;
+        }
+
+        // Obter URL pública
+        const { data: urlData } = supabase.storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(nomeArquivo);
+
+        fotosUploaded.push({
+          id: uploadData.path,
+          url: urlData.publicUrl,
+          nome_arquivo: file.originalname,
+          tamanho: file.size,
+          tipo: file.mimetype,
+          descricao,
+          execucao_id: execucaoId,
+          pergunta_id: perguntaId,
+          pergunta_codigo: perguntaCodigo,
+          uploaded_at: new Date().toISOString()
+        });
+
+        console.log(`✅ [EXECUCOES] Foto uploadada: ${nomeArquivo}`);
+      } catch (error: any) {
+        console.error(`❌ [EXECUCOES] Erro ao processar ${file.originalname}:`, error);
+      }
+    }
+
+    if (fotosUploaded.length === 0) {
+      return res.status(500).json({ error: 'Nenhuma foto foi enviada com sucesso' });
+    }
+
+    console.log(`✅ [EXECUCOES] ${fotosUploaded.length} fotos uploadadas com sucesso`);
+    return res.json({
+      success: true,
+      data: fotosUploaded,
+      total: fotosUploaded.length
+    });
+
+  } catch (error: any) {
+    console.error('❌ [EXECUCOES] Erro inesperado no upload de fotos:', error);
+    return res.status(500).json({
+      error: 'Erro interno do servidor',
+      details: error.message
+    });
+  }
+});
+
+// ================================================================
+// POST /api/execucoes/:id/assinatura
+// Cria assinatura digital para uma execução (usa service role - bypass RLS)
+// ================================================================
+router.post('/:id/assinatura', async (req: Request, res: Response) => {
+  try {
+    const { id: execucaoId } = req.params;
+    const {
+      tenant_id,
+      usuario_id,
+      assinatura_base64,
+      hash_assinatura,
+      timestamp_assinatura,
+      usuario_nome,
+      usuario_email,
+      usuario_matricula,
+      cargo_responsavel,
+      validado_por,
+      metodo_captura = 'canvas',
+      dispositivo,
+      navegador,
+      user_agent,
+      ip_address,
+      latitude,
+      longitude,
+      local_assinatura,
+      observacoes
+    } = req.body;
+
+    console.log(`✍️ [EXECUCOES] Criando assinatura para execução: ${execucaoId}`);
+
+    // Validações básicas
+    if (!tenant_id || !usuario_id || !assinatura_base64 || !hash_assinatura) {
+      return res.status(400).json({
+        error: 'Campos obrigatórios: tenant_id, usuario_id, assinatura_base64, hash_assinatura'
+      });
+    }
+
+    // Verificar se a execução existe
+    const { data: execucao, error: execError } = await supabase
+      .from('execucoes')
+      .select('id')
+      .eq('id', execucaoId)
+      .single();
+
+    if (execError || !execucao) {
+      return res.status(404).json({ error: 'Execução não encontrada' });
+    }
+
+    // Verificar se já existe assinatura para esta execução
+    const { data: assinaturaExistente } = await supabase
+      .from('assinaturas_execucoes')
+      .select('id')
+      .eq('execucao_id', execucaoId)
+      .single();
+
+    if (assinaturaExistente) {
+      return res.status(409).json({ error: 'Esta execução já possui uma assinatura' });
+    }
+
+    // Converter usuario_id (pode ser auth_user_id) para usuarios.id
+    let usuarioIdFinal = usuario_id;
+    
+    // Verificar se o usuario_id existe na tabela usuarios
+    const { data: usuarioExistente, error: usuarioError } = await supabase
+      .from('usuarios')
+      .select('id')
+      .eq('id', usuario_id)
+      .single();
+
+    // Se não encontrou, tentar buscar por auth_user_id
+    if (usuarioError || !usuarioExistente) {
+      console.log(`🔍 [EXECUCOES] usuario_id não encontrado em usuarios, tentando buscar por auth_user_id: ${usuario_id}`);
+      
+      const { data: usuarioPorAuth, error: authError } = await supabase
+        .from('usuarios')
+        .select('id')
+        .eq('auth_user_id', usuario_id)
+        .single();
+
+      if (authError || !usuarioPorAuth) {
+        console.error('❌ [EXECUCOES] Usuário não encontrado nem por id nem por auth_user_id:', usuario_id);
+        return res.status(400).json({
+          error: 'Usuário não encontrado no sistema',
+          details: `Nenhum usuário encontrado com id ou auth_user_id: ${usuario_id}`
+        });
+      }
+
+      usuarioIdFinal = usuarioPorAuth.id;
+      console.log(`✅ [EXECUCOES] Usuário encontrado por auth_user_id: ${usuario_id} -> usuarios.id: ${usuarioIdFinal}`);
+    }
+
+    // Criar assinatura (usando service role - bypass RLS)
+    const { data: assinatura, error: assinaturaError } = await supabase
+      .from('assinaturas_execucoes')
+      .insert({
+        execucao_id: execucaoId,
+        tenant_id,
+        usuario_id: usuarioIdFinal, // Usar o ID convertido
+        assinatura_base64,
+        hash_assinatura,
+        timestamp_assinatura: timestamp_assinatura || new Date().toISOString(),
+        usuario_nome,
+        usuario_email,
+        usuario_matricula,
+        cargo_responsavel,
+        validado_por,
+        metodo_captura,
+        dispositivo,
+        navegador,
+        user_agent,
+        ip_address,
+        latitude,
+        longitude,
+        local_assinatura,
+        observacoes,
+        status: 'ativa'
+      })
+      .select()
+      .single();
+
+    if (assinaturaError) {
+      console.error('❌ [EXECUCOES] Erro ao criar assinatura:', assinaturaError);
+      return res.status(500).json({
+        error: 'Erro ao criar assinatura',
+        details: assinaturaError.message
+      });
+    }
+
+    console.log(`✅ [EXECUCOES] Assinatura criada: ${assinatura.id}`);
+    return res.status(201).json(assinatura);
+
+  } catch (error: any) {
+    console.error('❌ [EXECUCOES] Erro inesperado ao criar assinatura:', error);
     return res.status(500).json({
       error: 'Erro interno do servidor',
       details: error.message

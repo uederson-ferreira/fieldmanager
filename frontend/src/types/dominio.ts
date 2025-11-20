@@ -82,6 +82,20 @@ export interface Execucao {
   created_at: string;
   updated_at: string;
 
+  // Campos adicionais (retornados pelo backend via JOIN)
+  modulo_nome?: string;
+  dominio_id?: string;
+  dominio_nome?: string;
+
+  // Alias para compatibilidade com código existente
+  campos_customizados?: {
+    local?: string;
+    responsavel?: string;
+    observacoes?: string;
+    empresa?: string;
+    [key: string]: any;
+  };
+
   // Relações (quando carregadas)
   modulos?: ModuloSistema;
   respostas?: ExecucaoResposta[];
@@ -102,6 +116,9 @@ export interface ExecucaoResposta {
   observacao?: string;
   created_at: string;
   updated_at: string;
+
+  // Alias para compatibilidade
+  valor_resposta?: string | boolean | number;
 
   // Relação (quando carregada)
   pergunta?: PerguntaModulo;
@@ -215,8 +232,30 @@ export interface CriarExecucaoPayload {
   usuario_id: string;
   data_execucao?: string;
   status?: 'rascunho' | 'concluido';
-  dados_execucao?: Record<string, any>;
-  observacoes_gerais?: string;
+
+  // Campos mapeados para o schema real da tabela execucoes
+  local_atividade?: string;
+  responsavel_tecnico?: string;
+  executor_nome?: string;
+  executor_matricula?: string;
+  executor_funcao?: string;
+  area_id?: string;
+  area_nome?: string;
+  observacoes?: string;
+  campos_customizados?: Record<string, any>;
+
+  // Assinaturas
+  assinatura_principal?: string;
+  data_assinatura_principal?: string;
+  assinatura_secundaria?: string;
+  data_assinatura_secundaria?: string;
+
+  // Localização GPS
+  latitude?: number;
+  longitude?: number;
+  gps_accuracy?: number;
+  endereco_gps?: string;
+
   respostas?: {
     pergunta_id: string;
     pergunta_codigo: string;

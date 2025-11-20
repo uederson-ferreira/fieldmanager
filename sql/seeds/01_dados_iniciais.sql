@@ -50,7 +50,7 @@ SELECT
 FROM dominios
 ON CONFLICT (tenant_id, dominio_id) DO NOTHING;
 
--- 5. USUÁRIO ADMIN
+-- 5. USUÁRIOS
 INSERT INTO usuarios (
   id,
   nome,
@@ -62,17 +62,43 @@ INSERT INTO usuarios (
   tenant_id,
   ativo
 )
-VALUES (
-  '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
-  'Administrador',
-  'admin@fieldmanager.dev',
-  'Admin@2025',
-  'ADM001',
-  '(11) 99999-0000',
-  '5d396506-658b-401f-888c-cad2bd4c9a56',
-  '00000000-0000-0000-0000-000000000001',
-  true
-)
+VALUES
+  -- Admin
+  (
+    '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+    'Administrador',
+    'admin@fieldmanager.dev',
+    'Admin@2025',
+    'ADM001',
+    '(11) 99999-0000',
+    '5d396506-658b-401f-888c-cad2bd4c9a56',
+    '00000000-0000-0000-0000-000000000001',
+    true
+  ),
+  -- Técnico de Campo
+  (
+    '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e',
+    'João Silva',
+    'tecnico@fieldmanager.dev',
+    'Tecnico@2025',
+    'TEC001',
+    '(11) 98888-1111',
+    'a5348539-3ee4-43a8-a7d8-2c78649deab5',
+    '00000000-0000-0000-0000-000000000001',
+    true
+  ),
+  -- Supervisor
+  (
+    '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f',
+    'Maria Santos',
+    'supervisor@fieldmanager.dev',
+    'Super@2025',
+    'SUP001',
+    '(11) 97777-2222',
+    '9af840e4-a83d-4006-b8ef-4bf6608130b1',
+    '00000000-0000-0000-0000-000000000001',
+    true
+  )
 ON CONFLICT (email) DO NOTHING;
 
 -- 6. MÓDULO NR-35
@@ -175,12 +201,23 @@ SELECT 'Perguntas criadas:', COUNT(*)::text FROM perguntas_modulos;
 -- ✅ SEED COMPLETO!
 -- ================================================================
 --
--- 🔑 Credenciais:
+-- 🔑 Credenciais de Acesso:
+--
+-- 👤 ADMIN (AdminDashboard):
 --    Email: admin@fieldmanager.dev
 --    Senha: Admin@2025
 --
+-- 👷 TÉCNICO DE CAMPO (TecnicoDashboard):
+--    Email: tecnico@fieldmanager.dev
+--    Senha: Tecnico@2025
+--
+-- 👨‍💼 SUPERVISOR (TecnicoDashboard com permissões extras):
+--    Email: supervisor@fieldmanager.dev
+--    Senha: Super@2025
+--
 -- ⚠️  PRÓXIMO PASSO:
---    1. Criar usuário no Supabase Auth (Dashboard → Authentication → Users)
---    2. Executar: UPDATE usuarios SET auth_user_id = 'UUID_AQUI' WHERE email = 'admin@fieldmanager.dev';
+--    1. Criar usuários no Supabase Auth (Dashboard → Authentication → Users)
+--    2. Para cada usuário, executar:
+--       UPDATE usuarios SET auth_user_id = 'UUID_DO_AUTH' WHERE email = 'email_do_usuario';
 --
 -- ================================================================

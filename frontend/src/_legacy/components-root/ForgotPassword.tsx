@@ -5,8 +5,8 @@
 
 import React, { useState } from 'react';
 import { User, AlertCircle, ArrowLeft, Mail, CheckCircle } from 'lucide-react';
-import { validateEmail } from '../utils/authUtils';
-import { authAPI } from '../lib/authAPI';
+import { validateEmail } from '../../utils/authUtils';
+import { authAPI } from '../../lib/authAPI';
 
 interface ForgotPasswordProps {
   onBack: () => void;

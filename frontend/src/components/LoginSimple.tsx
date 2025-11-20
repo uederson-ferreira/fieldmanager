@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { User, Lock, AlertCircle, Shield, TestTube, Eye, EyeOff } from 'lucide-react';
 import { validateEmail, validatePasswordStrength } from '../utils/authUtils';
-import ForgotPassword from './ForgotPassword';
+import ForgotPassword from '../_legacy/components-root/ForgotPassword';
 
 interface LoginSimpleProps {
   onLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -30,13 +30,21 @@ const LoginSimple: React.FC<LoginSimpleProps> = ({ onLogin, isLoading, error }) 
 
   const handleTestCredentials1 = () => {
     setFormData({
-      email: 'joao.silva@empresa.com',
-      password: '123456'
+      email: 'tecnico@fieldmanager.dev',
+      password: 'Tecnico@2025'
     });
     setValidationErrors([]);
   };
 
   const handleTestCredentials2 = () => {
+    setFormData({
+      email: 'supervisor@fieldmanager.dev',
+      password: 'Super@2025'
+    });
+    setValidationErrors([]);
+  };
+
+  const handleTestCredentials3 = () => {
     setFormData({
       email: 'admin@fieldmanager.dev',
       password: 'Admin@2025'
@@ -272,12 +280,22 @@ const LoginSimple: React.FC<LoginSimpleProps> = ({ onLogin, isLoading, error }) 
                   className="w-full flex justify-center items-center py-2 px-4 border border-blue-300 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 shadow-sm"
                 >
                   <TestTube className="h-4 w-4 mr-2" />
-                  João Silva (joao.silva@empresa.com)
+                  Técnico (tecnico@fieldmanager.dev)
                 </button>
                 
                 <button
                   type="button"
                   onClick={handleTestCredentials2}
+                  disabled={isLoading}
+                  className="w-full flex justify-center items-center py-2 px-4 border border-orange-300 rounded-lg text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-200 shadow-sm"
+                >
+                  <TestTube className="h-4 w-4 mr-2" />
+                  Supervisor (supervisor@fieldmanager.dev)
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={handleTestCredentials3}
                   disabled={isLoading}
                   className="w-full flex justify-center items-center py-2 px-4 border border-purple-300 rounded-lg text-sm font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-200 shadow-sm"
                 >

@@ -117,6 +117,11 @@ const AdminTermosCompleto: React.FC<AdminTermosCompletoProps> = ({ user }) => {
       }
 
       await carregarTermos();
+      
+      // Disparar evento para atualizar dashboard e histórico
+      window.dispatchEvent(new Event('termoSalvo'));
+      console.log('🔔 [ADMIN TERMOS] Evento termoSalvo disparado');
+      
       closeForm();
     } catch (error) {
       console.error('Erro ao salvar termo:', error);

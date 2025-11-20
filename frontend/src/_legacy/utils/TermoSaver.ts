@@ -188,6 +188,10 @@ export class TermoSaver {
             fotosSalvas: totalFotos
           });
 
+          // Disparar evento para atualizar dashboard e histórico (mesmo sendo offline)
+          window.dispatchEvent(new Event('termoSalvo'));
+          console.log('🔔 [TERMO SAVER] Evento termoSalvo disparado (offline)');
+
           return {
             success: true,
             termoId: termoOffline.id,
@@ -251,6 +255,10 @@ export class TermoSaver {
         numeroTermo: resultado.data.numero_termo,
         fotosSalvas: totalFotos
       });
+
+      // Disparar evento para atualizar dashboard e histórico
+      window.dispatchEvent(new Event('termoSalvo'));
+      console.log('🔔 [TERMO SAVER] Evento termoSalvo disparado');
 
       return {
         success: true,

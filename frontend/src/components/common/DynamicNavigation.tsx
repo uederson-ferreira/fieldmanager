@@ -54,7 +54,7 @@ export function gerarItensModulos(modulos: ModuloSistema[]): MenuItem[] {
     id: `modulo_${modulo.id}`,
     label: modulo.nome,
     icon: ICONE_POR_TIPO[modulo.tipo_modulo] || ClipboardCheck,
-    badge: null,
+    badge: null as number | null,
     moduleId: modulo.id,
     tipo: modulo.tipo_modulo
   }));

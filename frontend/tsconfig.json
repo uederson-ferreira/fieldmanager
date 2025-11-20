@@ -44,7 +44,6 @@
     "dev-dist",
     "**/node_modules/**",
     "**/workbox-*/**",
-    "**/workbox-build/**",
-    "src/_legacy/**"
+    "**/workbox-build/**"
   ]
 }

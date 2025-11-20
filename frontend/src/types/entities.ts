@@ -19,6 +19,7 @@ export interface UserData {
   funcao: string;
   telefone?: string;
   ativo: boolean;
+  tenant_id?: string; // ID do tenant para multi-tenancy (FieldManager v2.0)
   permissoes?: Record<string, boolean | string | number | null>;
   ultimo_login?: string | null;
   created_at?: string;

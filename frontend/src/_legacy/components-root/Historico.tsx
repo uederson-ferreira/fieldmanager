@@ -16,7 +16,7 @@ interface HistoricoProps {
 
 interface HistoricoItem {
   id: string;
-  tipo: 'termo' | 'lv' | 'rotina' | 'lv_residuos';
+  tipo: 'termo' | 'lv' | 'rotina' | 'lv_residuos' | 'execucao';
   titulo: string;
   descricao: string;
   data_criacao: string;
@@ -50,7 +50,10 @@ const Historico: React.FC<HistoricoProps> = ({ user, onBack }) => {
       }
       
       // Buscar histórico via API do backend
-      const response = await fetch(`${API_URL}/api/historico/usuario/${user.id}`, {
+      // Usar usuario_id se disponível, senão usar id (auth_user_id)
+      const userId = user.usuario_id || user.id;
+      console.log('🔍 [HISTÓRICO] Usando userId:', userId, '(usuario_id:', user.usuario_id, ', id:', user.id, ')');
+      const response = await fetch(`${API_URL}/api/historico/usuario/${userId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -79,6 +82,27 @@ const Historico: React.FC<HistoricoProps> = ({ user, onBack }) => {
   useEffect(() => {
     carregarHistorico();
   }, [user.id]);
+
+  // Listener para atualizar histórico quando um termo é criado
+  useEffect(() => {
+    const handleTermoSalvo = () => {
+      console.log('🔔 [HISTÓRICO] Evento termoSalvo recebido, recarregando histórico...');
+      carregarHistorico();
+    };
+
+    const handleMetaAtualizar = () => {
+      console.log('🔔 [HISTÓRICO] Evento meta:atualizar recebido, recarregando histórico...');
+      carregarHistorico();
+    };
+
+    window.addEventListener('termoSalvo', handleTermoSalvo);
+    window.addEventListener('meta:atualizar', handleMetaAtualizar);
+
+    return () => {
+      window.removeEventListener('termoSalvo', handleTermoSalvo);
+      window.removeEventListener('meta:atualizar', handleMetaAtualizar);
+    };
+  }, []);
 
   // Filtrar histórico
   const historicoFiltrado = historico.filter(item => {
@@ -130,6 +154,8 @@ const Historico: React.FC<HistoricoProps> = ({ user, onBack }) => {
         return '♻️';
       case 'rotina':
         return '🔄';
+      case 'execucao':
+        return '📝';
       default:
         return '📋';
     }
@@ -145,6 +171,8 @@ const Historico: React.FC<HistoricoProps> = ({ user, onBack }) => {
         return 'bg-yellow-100 text-yellow-800';
       case 'rotina':
         return 'bg-purple-100 text-purple-800';
+      case 'execucao':
+        return 'bg-emerald-100 text-emerald-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -223,6 +251,7 @@ const Historico: React.FC<HistoricoProps> = ({ user, onBack }) => {
                 <option value="lv">LVs</option>
                 <option value="lv_residuos">LVs Resíduos</option>
                 <option value="rotina">Rotinas</option>
+                <option value="execucao">Execuções</option>
               </select>
             </div>
 
@@ -266,7 +295,7 @@ const Historico: React.FC<HistoricoProps> = ({ user, onBack }) => {
           </div>
 
           {/* Estatísticas */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="text-2xl font-bold text-blue-600">
                 {historico.filter(item => item.tipo === 'termo').length}
@@ -290,6 +319,12 @@ const Historico: React.FC<HistoricoProps> = ({ user, onBack }) => {
                 {historico.filter(item => item.tipo === 'rotina').length}
               </div>
               <div className="text-sm text-purple-600">Rotinas</div>
+            </div>
+            <div className="bg-emerald-50 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-emerald-600">
+                {historico.filter(item => item.tipo === 'execucao').length}
+              </div>
+              <div className="text-sm text-emerald-600">Execuções</div>
             </div>
           </div>
         </div>

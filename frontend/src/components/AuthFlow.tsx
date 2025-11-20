@@ -5,8 +5,8 @@
 
 import React, { useState } from 'react';
 import LoginSimple from './LoginSimple';
-import ForgotPassword from './ForgotPassword';
-import ResetPassword from './ResetPassword';
+import ForgotPassword from '../_legacy/components-root/ForgotPassword';
+import ResetPassword from '../_legacy/components-root/ResetPassword';
 import { authAPI } from '../lib/authAPI';
 import useAuth from '../hooks/useAuth';
 
@@ -96,7 +96,6 @@ const AuthFlow: React.FC<AuthFlowProps> = ({ onLoginSuccess }) => {
           onLogin={handleLogin}
           isLoading={isLoading}
           error={error}
-          onForgotPassword={handleForgotPassword}
         />
       );
   }

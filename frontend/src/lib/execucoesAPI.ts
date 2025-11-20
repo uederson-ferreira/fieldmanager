@@ -27,16 +27,37 @@ export async function getExecucoes(filtros?: ExecucaoFiltros): Promise<Execucoes
     if (filtros?.limit) url.searchParams.append('limit', String(filtros.limit));
     if (filtros?.offset) url.searchParams.append('offset', String(filtros.offset));
 
-    const response = await fetch(url.toString());
+    const urlString = url.toString();
+    console.log(`🌐 [execucoesAPI] Fazendo requisição para: ${urlString}`);
+    console.log(`🌐 [execucoesAPI] API_URL configurada: ${API_URL}`);
+
+    const response = await fetch(urlString, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
 
     if (!response.ok) {
-      throw new Error(`Erro ao buscar execuções: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error(`❌ [execucoesAPI] Erro HTTP ${response.status}:`, errorText);
+      throw new Error(`Erro ao buscar execuções: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log(`✅ [execucoesAPI] ${data.data?.length || 0} execuções retornadas`);
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ [execucoesAPI] Erro ao buscar execuções:', error);
+    console.error('   Tipo do erro:', error?.name);
+    console.error('   Mensagem:', error?.message);
+    console.error('   API_URL tentada:', API_URL);
+    
+    // Mensagem mais amigável para o usuário
+    if (error?.message?.includes('Failed to fetch') || error?.name === 'TypeError') {
+      throw new Error(`Não foi possível conectar ao servidor. Verifique se o backend está rodando em ${API_URL}`);
+    }
+    
     throw error;
   }
 }
@@ -65,6 +86,8 @@ export async function getExecucao(id: string): Promise<ExecucaoCompleta> {
  */
 export async function criarExecucao(payload: CriarExecucaoPayload): Promise<Execucao> {
   try {
+    console.log('📤 [execucoesAPI] Enviando payload:', JSON.stringify(payload, null, 2));
+
     const response = await fetch(`${API_URL}/api/execucoes`, {
       method: 'POST',
       headers: {
@@ -74,11 +97,20 @@ export async function criarExecucao(payload: CriarExecucaoPayload): Promise<Exec
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `Erro ao criar execução: ${response.statusText}`);
+      let errorData;
+      try {
+        errorData = await response.json();
+        console.error('❌ [execucoesAPI] Erro do backend:', errorData);
+      } catch (e) {
+        const text = await response.text();
+        console.error('❌ [execucoesAPI] Resposta do backend (texto):', text);
+        throw new Error(`Erro ao criar execução: ${response.status} ${response.statusText} - ${text}`);
+      }
+      throw new Error(errorData.error || errorData.details || `Erro ao criar execução: ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log('✅ [execucoesAPI] Execução criada:', data);
     return data;
   } catch (error) {
     console.error('❌ [execucoesAPI] Erro ao criar execução:', error);
@@ -181,7 +213,7 @@ export async function salvarExecucaoFormulario(params: {
     modulo_id,
     usuario_id,
     status: 'concluido',
-    dados_execucao: dados_contexto || {},
+    campos_customizados: dados_contexto || {},
     respostas: respostasArray,
     fotos: fotosArray
   };
