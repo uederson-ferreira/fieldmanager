@@ -2,31 +2,27 @@ name: Tests
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
-  test:
-    name: Run Tests
+  typecheck:
+    name: Type Check
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: frontend
-
-    strategy:
-      matrix:
-        node-version: [20.x]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '20.x'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
@@ -51,53 +47,67 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run type checking
+      - name: Run TypeScript type checking
         run: pnpm type-check
-        continue-on-error: true
 
-      - name: Run tests
-        run: pnpm test:run
+  lint:
+    name: ESLint Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
 
-      - name: Generate coverage report
-        run: pnpm test:coverage
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./frontend/coverage/coverage-final.json
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-          working-directory: frontend
+          node-version: '20.x'
 
-      - name: Comment coverage on PR
-        if: github.event_name == 'pull_request'
-        uses: romeovs/lcov-reporter-action@v0.3.1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
         with:
-          lcov-file: ./frontend/coverage/lcov.info
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          delete-old-comments: true
-          working-directory: frontend
+          version: 9
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('frontend/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ESLint
+        run: pnpm lint
 
   quality-gate:
     name: Quality Gate
     runs-on: ubuntu-latest
-    needs: test
+    needs: [typecheck, lint]
     if: always()
 
     steps:
-      - name: Check coverage threshold
+      - name: Check if all jobs passed
         run: |
-          echo "Checking if coverage meets minimum threshold (70%)..."
-          # Este step será implementado quando Codecov estiver configurado
-
-      - name: All checks passed
-        if: success()
-        run: echo "✅ All quality checks passed!"
-
-      - name: Some checks failed
-        if: failure()
-        run: |
-          echo "❌ Quality checks failed!"
-          exit 1
+          if [ "${{ needs.typecheck.result }}" == "success" ] && [ "${{ needs.lint.result }}" == "success" ]; then
+            echo "✅ All quality checks passed!"
+            exit 0
+          else
+            echo "❌ Quality checks failed!"
+            echo "TypeCheck: ${{ needs.typecheck.result }}"
+            echo "Lint: ${{ needs.lint.result }}"
+            exit 1
+          fi

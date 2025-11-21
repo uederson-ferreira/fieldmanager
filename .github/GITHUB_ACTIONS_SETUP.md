@@ -1,6 +1,6 @@
 # 🚀 GUIA DE SETUP - GITHUB ACTIONS
 
-Este guia explica como configurar e usar os workflows do GitHub Actions criados para o projeto EcoField.
+Este guia explica como configurar e usar os workflows do GitHub Actions criados para o projeto **FieldManager v2.0**.
 
 ---
 
@@ -11,7 +11,6 @@ Antes de começar, certifique-se de que você tem:
 - ✅ Repositório no GitHub
 - ✅ Permissões de administrador no repositório
 - ✅ Branch `main` criada
-- ✅ Branch `develop` criada (opcional)
 
 ---
 
@@ -44,27 +43,17 @@ Adicione as seguintes secrets no repositório:
 # Supabase (obrigatórios para build)
 VITE_SUPABASE_URL
 VITE_SUPABASE_ANON_KEY
-
-# Codecov (opcional - para monitoramento de cobertura)
-CODECOV_TOKEN
 ```
 
 #### Como obter os valores
 
 **VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY:**
 
-1. Acesse seu projeto no Supabase
+1. Acesse seu projeto no Supabase (fieldmanager-production)
 2. Vá para Settings → API
 3. Copie os valores:
    - Project URL → `VITE_SUPABASE_URL`
    - anon/public key → `VITE_SUPABASE_ANON_KEY`
-
-**CODECOV_TOKEN (opcional):**
-
-1. Crie uma conta em <https://about.codecov.io/>
-2. Adicione seu repositório
-3. Copie o token fornecido
-4. Cole no GitHub como secret `CODECOV_TOKEN`
 
 ---
 
@@ -80,12 +69,11 @@ Para garantir que ninguém faça merge sem passar nos checks:
    - ✅ **Require status checks to pass before merging**
    - ✅ **Require branches to be up to date before merging**
 5. Em "Status checks that are required", selecione:
-   - ✅ `Run Tests` (do workflow tests.yml)
+   - ✅ `Type Check` (do workflow tests.yml)
+   - ✅ `ESLint Check` (do workflow tests.yml)
    - ✅ `Build Application` (do workflow build.yml)
    - ✅ `ESLint` (do workflow lint.yml)
 6. Clique em **Create**
-
-Repita para a branch `develop` se usar Gitflow.
 
 ---
 
@@ -95,19 +83,20 @@ Repita para a branch `develop` se usar Gitflow.
 
 **Quando executa:**
 
-- Push em `main` ou `develop`
-- Pull Request para `main` ou `develop`
+- Push em `main`
+- Pull Request para `main`
 
 **O que faz:**
 
-1. Instala dependências
-2. Executa type checking
-3. Executa todos os 235 testes
-4. Gera relatório de cobertura
-5. Envia cobertura para Codecov
-6. Comenta cobertura no PR
+1. **Type Check Job**: Instala dependências e executa verificação de tipos TypeScript
+2. **ESLint Check Job**: Instala dependências e executa verificação de lint
+3. **Quality Gate Job**: Verifica se ambos os jobs anteriores passaram
 
 **Duração:** ~1-2 minutos (com cache)
+
+**Scripts executados:**
+- `pnpm type-check` - Verificação de tipos TypeScript
+- `pnpm lint` - Verificação de padrões de código ESLint
 
 **Exemplo de uso:**
 
@@ -120,7 +109,7 @@ git commit -m "feat: adicionar nova funcionalidade"
 git push origin feature/nova-funcionalidade
 
 # Abrir PR no GitHub
-# Os testes serão executados automaticamente
+# Os workflows executarão automaticamente
 ```
 
 ---
@@ -129,8 +118,8 @@ git push origin feature/nova-funcionalidade
 
 **Quando executa:**
 
-- Push em `main` ou `develop`
-- Pull Request para `main` ou `develop`
+- Push em `main`
+- Pull Request para `main`
 
 **O que faz:**
 
@@ -154,8 +143,8 @@ git push origin feature/nova-funcionalidade
 
 **Quando executa:**
 
-- Push em `main` ou `develop`
-- Pull Request para `main` ou `develop`
+- Push em `main`
+- Pull Request para `main`
 
 **O que faz:**
 
@@ -186,15 +175,11 @@ git push
 Quando você abrir um PR, verá:
 
 1. **Status checks** na parte inferior:
-   - ✅ Run Tests - Node 18.x
-   - ✅ Run Tests - Node 20.x
+   - ✅ Type Check
+   - ✅ ESLint Check
+   - ✅ Quality Gate
    - ✅ Build Application
    - ✅ ESLint
-
-2. **Comentário de cobertura** (se Codecov configurado):
-   - Comparação de cobertura
-   - Diff de arquivos modificados
-   - Link para relatório completo
 
 ### Na aba Actions
 
@@ -233,7 +218,7 @@ Quando você abrir um PR, verá:
 
 ---
 
-### Problema: Testes falhando no CI mas passam localmente
+### Problema: Type checking falhando no CI mas passa localmente
 
 **Causa:** Diferença de ambiente ou cache
 
@@ -244,11 +229,11 @@ Quando você abrir um PR, verá:
 pnpm clean
 pnpm install
 
-# Execute testes:
-pnpm test:run
-
-# Verifique type checking:
+# Execute type checking:
 pnpm type-check
+
+# Verifique lint:
+pnpm lint
 ```
 
 ---
@@ -276,27 +261,25 @@ git checkout -b feature/minha-feature
 # 2. Fazer alterações
 # ... código ...
 
-# 3. Executar testes localmente
-pnpm test:run
-
-# 4. Verificar lint
+# 3. Verificar localmente
+pnpm type-check
 pnpm lint
 
-# 5. Commit e push
+# 4. Commit e push
 git add .
 git commit -m "feat: minha nova feature"
 git push origin feature/minha-feature
 
-# 6. Abrir PR no GitHub
+# 5. Abrir PR no GitHub
 # Os workflows executarão automaticamente
 
-# 7. Se falhar:
+# 6. Se falhar:
 #    - Ver logs no GitHub Actions
 #    - Corrigir localmente
 #    - Push novamente
 #    - Workflows re-executam automaticamente
 
-# 8. Quando todos os checks passarem:
+# 7. Quando todos os checks passarem:
 #    - Solicitar review
 #    - Fazer merge
 ```
@@ -313,8 +296,9 @@ git checkout -b hotfix/corrigir-bug-critico
 
 # 2. Corrigir o bug
 
-# 3. Executar testes
-pnpm test:run
+# 3. Verificar localmente
+pnpm type-check
+pnpm lint
 
 # 4. Commit e push
 git add .
@@ -333,19 +317,6 @@ git push origin hotfix/corrigir-bug-critico
 
 ## 📈 MONITORAMENTO
 
-### Codecov (Opcional)
-
-Se você configurou o Codecov, terá:
-
-1. **Dashboard visual** de cobertura
-2. **Histórico de cobertura** ao longo do tempo
-3. **Comentários automáticos** em PRs
-4. **Alertas** quando cobertura cai
-
-**Acessar:** <https://app.codecov.io/gh/[seu-usuario]/ecofield>
-
----
-
 ### GitHub Insights
 
 Para ver estatísticas dos workflows:
@@ -363,11 +334,10 @@ Para ver estatísticas dos workflows:
 
 Os seguintes critérios **devem** ser atendidos para merge:
 
-### ✅ Testes (tests.yml)
+### ✅ Tests (tests.yml)
 
-- Todos os 235 testes passando
 - Type checking sem erros
-- Cobertura >= 70%
+- ESLint sem erros ou warnings
 
 ### ✅ Build (build.yml)
 
@@ -390,8 +360,7 @@ Os seguintes critérios **devem** ser atendidos para merge:
 Já implementado:
 
 - ✅ Cache do pnpm store
-- ✅ Cache do node_modules
-- ✅ Execução paralela (matrix strategy)
+- ✅ Execução paralela (jobs independentes)
 - ✅ Timeouts configurados
 
 ### Reduzir Uso de Minutos
@@ -409,20 +378,16 @@ Já implementado:
 - [GitHub Actions Docs](https://docs.github.com/en/actions)
 - [Workflow Syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
 - [pnpm Action](https://github.com/pnpm/action-setup)
-- [Codecov Docs](https://docs.codecov.com/)
 
 ### Badges do README
 
 Atualize as badges no README.md com suas URLs reais:
 
 ```markdown
-[![Tests](https://github.com/SEU-USUARIO/ecofield/actions/workflows/tests.yml/badge.svg)](https://github.com/SEU-USUARIO/ecofield/actions/workflows/tests.yml)
-[![Build](https://github.com/SEU-USUARIO/ecofield/actions/workflows/build.yml/badge.svg)](https://github.com/SEU-USUARIO/ecofield/actions/workflows/build.yml)
-[![Lint](https://github.com/SEU-USUARIO/ecofield/actions/workflows/lint.yml/badge.svg)](https://github.com/SEU-USUARIO/ecofield/actions/workflows/lint.yml)
-[![codecov](https://codecov.io/gh/SEU-USUARIO/ecofield/branch/main/graph/badge.svg)](https://codecov.io/gh/SEU-USUARIO/ecofield)
+[![Tests](https://github.com/uederson-ferreira/fieldmanager/actions/workflows/tests.yml/badge.svg)](https://github.com/uederson-ferreira/fieldmanager/actions/workflows/tests.yml)
+[![Build](https://github.com/uederson-ferreira/fieldmanager/actions/workflows/build.yml/badge.svg)](https://github.com/uederson-ferreira/fieldmanager/actions/workflows/build.yml)
+[![Lint](https://github.com/uederson-ferreira/fieldmanager/actions/workflows/lint.yml/badge.svg)](https://github.com/uederson-ferreira/fieldmanager/actions/workflows/lint.yml)
 ```
-
-Substitua `SEU-USUARIO` pelo seu username do GitHub.
 
 ---
 
@@ -436,8 +401,31 @@ Use este checklist para validar que tudo está configurado:
 - [ ] Branch protection configurada para `main`
 - [ ] Workflows testados com um PR
 - [ ] Badges do README atualizadas
-- [ ] Codecov configurado (opcional)
-- [ ] Team notificado sobre CI/CD
+
+---
+
+## 🔮 PRÓXIMOS PASSOS
+
+### Implementar Testes Automatizados (Fase 4 do PoC)
+
+Quando os testes forem implementados, adicionar ao `tests.yml`:
+
+```yaml
+- name: Run unit tests
+  run: pnpm test:run
+
+- name: Generate coverage report
+  run: pnpm test:coverage
+```
+
+E adicionar os scripts no `frontend/package.json`:
+
+```json
+"scripts": {
+  "test:run": "vitest run",
+  "test:coverage": "vitest run --coverage"
+}
+```
 
 ---
 
@@ -445,9 +433,9 @@ Use este checklist para validar que tudo está configurado:
 
 Com os workflows configurados, você tem:
 
-- ✅ **Testes automatizados** em cada push/PR
-- ✅ **Build validation** garantindo deploy seguro
+- ✅ **Type checking automatizado** em cada push/PR
 - ✅ **Lint enforcement** mantendo qualidade de código
+- ✅ **Build validation** garantindo deploy seguro
 - ✅ **Feedback rápido** (1-2 minutos)
 - ✅ **Quality gates** bloqueando código quebrado
 - ✅ **Confiança** para fazer deploy
@@ -456,6 +444,6 @@ Com os workflows configurados, você tem:
 
 ---
 
-**Mantido por:** Claude Code
-**Última atualização:** 13/11/2025
-**Versão:** 1.0
+**Projeto:** FieldManager v2.0
+**Última atualização:** 20/11/2025
+**Versão:** 2.0
