@@ -38,11 +38,13 @@ O código em `backend/src/routes/_legacy/` é do **EcoField antigo** e serve APE
 ### Abordagem para Novas Features
 
 ❌ **NÃO fazer**:
+
 - Copiar código de `_legacy/` diretamente
 - Criar lógica específica para um domínio (ex: só ambiental)
 - Hard-code de categorias, perguntas ou módulos
 
 ✅ **FAZER**:
+
 - Criar componentes genéricos que funcionem para qualquer domínio
 - Usar `modulos_sistema` e `perguntas_modulos` (dinâmico)
 - Seguir arquitetura multi-domínio do documento de estratégia
@@ -51,16 +53,19 @@ O código em `backend/src/routes/_legacy/` é do **EcoField antigo** e serve APE
 ### Estado Atual do Projeto (Jan 2025)
 
 **Backend**: ✅ APIs multi-domínio implementadas
+
 - `/api/dominios` - Gerenciamento de domínios
 - `/api/modulos-sistema` - Templates configuráveis
 - `/api/execucoes` - Sistema unificado de execuções
 
 **Banco de Dados**: ✅ Schema multi-domínio criado
+
 - 6 domínios cadastrados (Ambiental, Segurança, Qualidade, Saúde, Manutenção, Auditoria)
 - 1 módulo exemplo (NR-35 com 20 perguntas)
 - 13 rotas legadas isoladas em `_legacy/`
 
 **Frontend**: ⏳ Aguardando migração (Fase 3)
+
 - Ainda usa código do EcoField
 - Próximo passo: Implementar DominioContext e componentes dinâmicos
 
@@ -275,7 +280,7 @@ SQL migrations are in `frontend/sql/` organized by purpose (admin, migrations, f
 
 **Frontend (.env):**
 
-```
+```bash
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key
 VITE_APP_NAME="FieldManager - Sistema de Gestão Ambiental"
@@ -285,7 +290,7 @@ VITE_APP_ENV=development
 
 **Backend (.env):**
 
-```
+```bash
 PORT=3001
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your_anon_key
@@ -335,7 +340,7 @@ Each resource has its own API client module in `src/lib/`:
 - SPA routing with rewrites to `/index.html`
 - Security headers configured
 
-### Backend
+### Backend1
 
 - Can be deployed to any Node.js hosting (Heroku, Render, Railway, etc.)
 - Requires `PORT` environment variable

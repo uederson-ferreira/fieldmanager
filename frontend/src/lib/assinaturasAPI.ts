@@ -3,7 +3,7 @@
 // Localização: src/lib/assinaturasAPI.ts
 // ===================================================================
 
-import { API_URL } from './supabase';
+import { API_URL, supabase } from './supabase';
 import { getAuthToken } from '../utils/authUtils';
 import type { DadosAssinatura } from '../components/common/AssinaturaDigital';
 

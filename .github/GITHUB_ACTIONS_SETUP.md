@@ -95,6 +95,7 @@ Para garantir que ninguém faça merge sem passar nos checks:
 **Duração:** ~1-2 minutos (com cache)
 
 **Scripts executados:**
+
 - `pnpm type-check` - Verificação de tipos TypeScript
 - `pnpm lint` - Verificação de padrões de código ESLint
 

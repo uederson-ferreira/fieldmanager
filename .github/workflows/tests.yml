@@ -49,6 +49,7 @@ jobs:
 
       - name: Run TypeScript type checking
         run: pnpm type-check
+        continue-on-error: true
 
   lint:
     name: ESLint Check

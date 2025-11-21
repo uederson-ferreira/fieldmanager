@@ -20,6 +20,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
  */
 async function fetchWithRetry(
   url: string,
+  // eslint-disable-next-line no-undef
   options: RequestInit = {},
   maxRetries = 3
 ): Promise<Response> {
