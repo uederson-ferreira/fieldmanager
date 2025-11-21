@@ -67,6 +67,21 @@ pnpm dev
 
 ---
 
+## 🔄 CI/CD & Quality Checks
+
+[![Tests](https://github.com/uederson-ferreira/fieldmanager/actions/workflows/tests.yml/badge.svg)](https://github.com/uederson-ferreira/fieldmanager/actions/workflows/tests.yml)
+[![Build](https://github.com/uederson-ferreira/fieldmanager/actions/workflows/build.yml/badge.svg)](https://github.com/uederson-ferreira/fieldmanager/actions/workflows/build.yml)
+[![Lint](https://github.com/uederson-ferreira/fieldmanager/actions/workflows/lint.yml/badge.svg)](https://github.com/uederson-ferreira/fieldmanager/actions/workflows/lint.yml)
+
+**Workflows ativos:**
+- ✅ Type Check + ESLint Check + Quality Gate
+- ✅ Build de Produção
+- ✅ Lint Enforcement
+
+Todos os PRs são automaticamente validados antes do merge.
+
+---
+
 ## 👨‍💻 Autor
 
 **Uederson Ferreira** - [GitHub](https://github.com/uedersonferreira)
