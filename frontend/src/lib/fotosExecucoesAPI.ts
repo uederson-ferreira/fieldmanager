@@ -3,8 +3,11 @@
 // Upload via backend (usa service role - bypass RLS)
 // ===================================================================
 
-import { API_URL } from './supabase';
+import { API_URL, supabase } from './supabase';
 import { getAuthToken } from '../utils/authUtils';
+
+// Nome do bucket no Supabase Storage
+const BUCKET_NAME = 'execucoes';
 
 export interface FotoExecucao {
   id: string;
